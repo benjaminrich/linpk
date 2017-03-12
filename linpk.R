@@ -64,6 +64,17 @@ pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeri
 
     dose <- dose[order(dose$t.dose),] # Time order
 
+    # Expand addl
+    if (any(dose$addl > 0)) {
+        expand.addl <- do.call(rbind, lapply(seq.int(nrow(dose)), function(j) {
+                    with(dose[j,],
+                        data.frame(t.dose=seq(t.dose, by=ii, length.out=addl+1), j=j))
+                }))
+        dose <- dose[expand.addl$j,]
+        dose$t.dose <- expand.addl$t.dose
+        dose$addl <- NULL
+    }
+
     ncomp <- 1 + length(q)
     n <- ncomp + oral
     A <- matrix(0, n, n)
