@@ -103,33 +103,35 @@ pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeri
     y <- matrix(0, n, length(t.obs))
 
     for (j in seq.int(nrow(dose))) {
+        with(dose[j,]) {
 
-        tad <- t.obs - dose$t.dose[j] - dose$lag[j]
+            tad <- t.obs - t.dose - lag
 
-        t1 <- tad
-        if (all(t1 < 0)) break
-
-        y0 <- rep(0, n)
-        if (dose$rate[j] > 0) {
-            # Zero-order infusion
-            b <- rep(0, n)
-            b[dose$cmt[j]] <- dose$rate[j]
-            ystat <- -solve(qrA, b)
-            Cinf <- solve(qrV, y0 - ystat)
-            i <- t1 >= 0 & t1 < dur 
-            y[,i] <- y[,i] + V %*% (Cinf * exp(L %o% t1[i])) + ystat
-            y0 <- drop(V %*% (Cinf * exp(L * dur)) + ystat) # At EOI
-            t1 <- tad - dose$dur[j]    # Advance time to EOI
+            t1 <- tad
             if (all(t1 < 0)) break
-        } else if (oral && dose$cmt[j] == 0) {
-            y0[n] <- dose$amt[j]
-        } else {
-            y0[dose$cmt[j]] <- dose$amt[j] # Bolus
-        }
 
-        C <- solve(qrV, y0)
-        i <- t1 >= 0
-        y[,i] <- y[,i] + V %*% (C * exp(L %o% t1[i]))
+            y0 <- rep(0, n)
+            if (rate > 0) {
+                # Zero-order infusion
+                b <- rep(0, n)
+                b[cmt] <- rate
+                ystat <- -solve(qrA, b)
+                Cinf <- solve(qrV, y0 - ystat)
+                i <- t1 >= 0 & t1 < dur 
+                y[,i] <- y[,i] + V %*% (Cinf * exp(L %o% t1[i])) + ystat
+                y0 <- drop(V %*% (Cinf * exp(L * dur)) + ystat) # At EOI
+                t1 <- tad - dur    # Advance time to EOI
+                if (all(t1 < 0)) break
+            } else if (oral && cmt == 0) {
+                y0[n] <- amt
+            } else {
+                y0[cmt] <- amt # Bolus
+            }
+
+            C <- solve(qrV, y0)
+            i <- t1 >= 0
+            y[,i] <- y[,i] + V %*% (C * exp(L %o% t1[i]))
+        }
     }
     y[1,]/vc
 }
