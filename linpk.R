@@ -48,12 +48,11 @@ pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeri
     dose$lag    [is.na(dose$lag   )] <- 0
     dose$f      [is.na(dose$f     )] <- 1
 
-    if (!oral) {
-        dose$cmt[dose$cmt == 0] <- 1
-    }
-
     dose$amt <- dose$amt * dose$f  # Bioavailable fraction
 
+    dose$ss <- as.logical(dose$ss) # Steady state
+
+    # Zero-order infusion
     if (any(dose$rate > 0 & dose$dur > 0 & dose$rate != (dose$amt / dose$dur))) {
         warning("Both rate and dur specified for infusion; only rate will be considered")
     }
@@ -61,8 +60,6 @@ pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeri
     dose$rate[i] <- dose$amt[i] / dose$dur[i]
     i <- dose$rate > 0
     dose$dur[i] <- dose$amt[i] / dose$rate[i]
-
-    dose <- dose[order(dose$t.dose),] # Time order
 
     # Expand addl
     if (any(dose$addl > 0)) {
@@ -74,6 +71,8 @@ pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeri
         dose$t.dose <- expand.addl$t.dose
         dose$addl <- NULL
     }
+
+    dose <- dose[order(dose$t.dose),] # Time order
 
     ncomp <- 1 + length(q)
     n <- ncomp + oral
@@ -92,7 +91,11 @@ pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeri
     if (oral) {
         A[1,n] <- ka
         A[n,n] <- -ka
+        dose$cmt[dose$cmt == 0] <- n
+    } else {
+        dose$cmt[dose$cmt == 0] <- 1
     }
+
 
     eigenA <- eigen(A)
     L <- eigenA$value
@@ -103,35 +106,61 @@ pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeri
     y <- matrix(0, n, length(t.obs))
 
     for (j in seq.int(nrow(dose))) {
-        with(dose[j,]) {
+        t.dose <- dose$t.dose[j]
+        amt    <- dose$amt   [j]
+        rate   <- dose$rate  [j]
+        dur    <- dose$dur   [j]
+        ii     <- dose$ii    [j]
+        ss     <- dose$ss    [j]
+        cmt    <- dose$cmt   [j]
+        lag    <- dose$lag   [j]
 
-            tad <- t.obs - t.dose - lag
+        tad <- t.obs - t.dose - lag
 
-            t1 <- tad
-            if (all(t1 < 0)) break
+        t1 <- tad
+        if (all(t1 < 0)) break
 
-            y0 <- rep(0, n)
-            if (rate > 0) {
-                # Zero-order infusion
-                b <- rep(0, n)
-                b[cmt] <- rate
-                ystat <- -solve(qrA, b)
-                Cinf <- solve(qrV, y0 - ystat)
-                i <- t1 >= 0 & t1 < dur 
-                y[,i] <- y[,i] + V %*% (Cinf * exp(L %o% t1[i])) + ystat
-                y0 <- drop(V %*% (Cinf * exp(L * dur)) + ystat) # At EOI
-                t1 <- tad - dur    # Advance time to EOI
-                if (all(t1 < 0)) break
-            } else if (oral && cmt == 0) {
-                y0[n] <- amt
+        if (rate > 0) {
+            # Zero-order infusion
+            b <- rep(0, n)
+            b[cmt] <- rate
+            ystat <- -solve(qrA, b)
+            if (ss) {
+                y[,t1 >= 0] <- 0  # Reset
+                Q1 <- exp(L * ii) / (1 - exp(L * ii))
+                Q2 <- exp(L * dur) / (1 - exp(L * dur))
+                y0 <- drop(V %*% (solve(qrV, ystat) * Q1 / Q2))
+                if (lag > 0) {
+                    i <- tad >= 0 & tad < lag
+                    t1[i] <- t1[i] %% ii
+                }
             } else {
-                y0[cmt] <- amt # Bolus
+                y0 <- rep(0, n)
             }
-
-            C <- solve(qrV, y0)
-            i <- t1 >= 0
-            y[,i] <- y[,i] + V %*% (C * exp(L %o% t1[i]))
+            Cinf <- solve(qrV, y0 - ystat)
+            i <- t1 >= 0 & t1 < dur 
+            y[,i] <- y[,i] + V %*% (Cinf * exp(L %o% t1[i])) + ystat
+            y0 <- drop(V %*% (Cinf * exp(L * dur)) + ystat) # At EOI
+            t1 <- tad - dur    # Advance time to EOI
+            if (all(t1 < 0)) break
+        } else {
+            delta <- rep(0, n)
+            delta[cmt] <- amt
+            if (ss) {
+                y[,t1 >= 0] <- 0  # Reset
+                y0 <- drop(V %*% (solve(qrV, delta) / (1 - exp(L * ii))))
+                if (lag > 0) {
+                    i <- tad >= 0 & tad < lag
+                    t1[i] <- t1[i] %% ii
+                }
+            } else {
+                y0 <- delta
+            }
         }
+
+        C <- solve(qrV, y0)
+        i <- t1 >= 0
+        y[,i] <- y[,i] + V %*% (C * exp(L %o% t1[i]))
     }
     y[1,]/vc
 }
