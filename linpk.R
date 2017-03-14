@@ -162,6 +162,33 @@ pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeri
         i <- t1 >= 0
         y[,i] <- y[,i] + V %*% (C * exp(L %o% t1[i]))
     }
-    y[1,]/vc
+
+    conc <- y[1,]/vc
+
+    # Derive secondary parameters
+    Cmin <- numeric(nrow(dose))
+    Cmax <- numeric(nrow(dose))
+    Tmax <- numeric(nrow(dose))
+    AUC <- numeric(nrow(dose))
+    for (j in seq.int(nrow(dose))) {
+        i <- t.obs >= dose$t.dose[j] & t.obs < ifelse(j < nrow(dose), dose$t.dose[j+1], Inf)
+        Cmin[j] <- head(conc[i], 1)
+        Cmax[j] <- max(conc[i])
+        Tmax[j] <- t.obs[i][which.max(conc[i])]
+        i <- t.obs >= dose$t.dose[j]
+        AUC[j] <- sum(0.5 * (conc[i][-1] + conc[i][-length(conc[i])]) * diff(t.obs[i]))
+    }
+    AUC <- c(rev(diff(rev(AUC))), tail(AUC, 1))
+
+    structure(conc,
+        class = "pkprofile",
+        t.obs = t.obs,
+        t.dose = dose$t.dose,
+        secondary = list(
+            HLterm = log(2)/min(-eigen(A[1:ncomp,1:ncomp])$values),
+            Cmin = Cmin,
+            Cmax = Cmax,
+            Tmax = Tmax,
+            AUC = AUC))
 }
 
