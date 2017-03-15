@@ -1,5 +1,133 @@
+#' Generate a concentration-time profile.
+#'
+#' This function generates concentration-time profiles from a linear
+#' pharmacokinetic (PK) system, possibly with first-order absoption or
+#' zero-order infusion, possibly with one or more peripheral compartments, and
+#' possibly under steady-state conditions. Single or multiple doses may be
+#' specified.
+
+#' @param t.obs A numeric vector of times at which to observe concentrations.
+#' @param cl Central clearance parameter.
+#' @param vl Central volume parameter.
+#' @param q Inter-compartmental clearance. Can be a vector for more than one
+#' peripheral compartment, or empty for none. Must match \code{vp} in length.
+#' @param vp Peripheral volume. Can be a vector for more than one
+#' peripheral compartment, or empty for none. Must match \code{q} in length.
+#' @param ka First-order absorption rate parameter. Set to 0 to indicate
+#' that there is no first-order absorption (i.e. bolus or infusion).
+#' @param dose A \code{list} or \code{data.frame} containing dose information.
+#' May contain the following elements:
+#' \describe{
+#'   \item{\code{t.dose}}{Dose time (default 0).}
+#'   \item{\code{amt}}{Dose amount (default 1).}
+#'   \item{\code{rate}}{Rate of zero-order infusion, or 0 to ignore (default 0).
+#'   Only one of \code{rate} and \coode{dur} should be specified.}
+#'   \item{\code{dur}}{Duration of zero-order infusion, or 0 to ignore (default 0).
+#'   Only one of \code{rate} and \coode{dur} should be specified.}
+#'   \item{\code{ii}}{Interdose interval (default 24). Only used if addl or ss are used.}
+#'   \item{\code{addl}}{Number of \emph{additional} doses (default 0). The
+#'   total number of doses given is \code{addl + 1}.}
+#'   \item{\code{ss}}{Indicates that a dose is given under steady-state
+#'   conditions (default 0 or FALSE; converted to \code{logical} internally).}
+#'   \item{\code{cmt}}{The number of the compartment into which the dose is
+#'   administered. The default value is 0, which indicates the depot
+#'   compartment for first-order absorption (i.e. \code{ka > 0}), and central
+#'   compartment otherwise.}
+#'   \item{\code{lag}}{Time lag (default 0).}
+#'   \item{\code{f}}{Bioavailable fraction (default 0).}
+#' }
+#' @return An object of class "pkprofile", which simply a numeric vector of
+#' concentration values with some attributes attached to it. These include:
+#' \describe{
+#'   \item{\code{t.obs}}{Numeric vector of concentration times.}
+#'   \item{\code{t.dose}}{Numeric vecotr of dose time.}
+#'   \item{\code{secondary}}{A list of derived secondary PK parameters. This includes:
+#'     \describe{
+#'       \item{\code{HLterm}}{Terminal half-life.}
+#'       \item{\code{Ctrough}}{Concentration value at the time the dose was
+#'       given (assuming this time is one of those in \code{t.obs}, otherwise
+#'       at the most recent previous observation time}.
+#'       \item{\code{Cmin}}{The minimum concentration observed in the time
+#'       interval between two consecutive doses.}
+#'       \item{\code{Cmax}}{The minimum concentration observed in the time
+#'       interval between two consecutive doses.}
+#'       \item{\code{AUC}}{The area under the concentration-time curve in the time
+#'       interval between two consecutive doses, calcuated by the trapezoid rule.}
+#'     \code{Ctrough}, \code{Cmin}, \code{Cmax} and \code{AUC} are vectors of
+#'     length \code{j - 1} where \code{j} is the number of doses given. It is
+#'     recommended that \code{t.obs} be a superset of \code{t.dose}.}
+#'   }
+#' }
+#' This object has its own methods for \code{print}, \code{plot}, \code{lines} and \code{points}.
+#' @examples
+#' # Default values, a bolus injection
+#' y <- pkprofile()
+#' plot(y)
+#' 
+#' t.obs <- seq(0, 24, 0.1)
+#' dur <- 1
+#' amt <- 1
+#' ka <- 1
+#' cl <- 0.25
+#' vc <- 5
+#' q <- 2.5
+#' vp <- 10
+#' 
+#' # One-compartment model with first-order absorption, single dose
+#' y <- pkprofile(t.obs, cl=cl, vc=vc, ka=ka, dose=list(amt=amt))
+#' plot(y)
+#' 
+#' # Two-compartment model with first-order absorption, single dose
+#' y <- pkprofile(t.obs, cl=cl, vc=vc, vp=vp, q=q, ka=ka, dose=list(amt=amt))
+#' plot(y)
+#' 
+#' # One-compartment model with zero-order infusion, single dose
+#' y <- pkprofile(t.obs, cl=cl, vc=vc, dose=list(dur=dur, amt=amt))
+#' plot(y)
+#' 
+#' # Two-compartment model with zero-order infusion, single dose
+#' y <- pkprofile(t.obs, cl=cl, vc=vc, vp=vp, q=q, dose=list(dur=dur, amt=amt))
+#' plot(y)
+#' 
+#' # Two-compartment model with bolus injection, single dose
+#' y <- pkprofile(t.obs, cl=cl, vc=vc, vp=vp, q=q, dose=list(amt=amt))
+#' plot(y)
+#' 
+#' # Two-compartment model with bolus injection into the peripheral compartment, single dose
+#' y <- pkprofile(t.obs, cl=cl, vc=vc, vp=vp, q=q, dose=list(amt=amt, cmt=2))
+#' plot(y)
+#' 
+#' # Two-compartment model with zero-order infusion into the peripheral compartment, single dose
+#' y <- pkprofile(t.obs, cl=cl, vc=vc, vp=vp, q=q, dose=list(amt=amt, cmt=2, dur=dur))
+#' plot(y)
+#' 
+#' t.obs <- seq(0, 24*6, 1)
+#'
+#' # One-compartment model with first-order absorption, multiple doses
+#' y <- pkprofile(t.obs, cl=cl, vc=vc, ka=ka, dose=list(t.dose=seq(0, 24*5, 12), amt=amt))
+#' plot(y)
+#' 
+#' # One-compartment model with first-order absorption, multiple doses specified by addl and ii
+#' y <- pkprofile(t.obs, cl=cl, vc=vc, ka=ka, dose=list(t.dose=0, amt=amt, addl=9, ii=12))
+#' plot(y, type="b")
+#' points(y, col="blue")
+#' 
+#' # One-compartment model with first-order absorption, multiple doses under steady-state conditions
+#' yss <- pkprofile(t.obs, cl=cl, vc=vc, ka=ka, dose=list(t.dose=0, amt=amt, addl=9, ii=12, ss=1))
+#' lines(yss, col="red")
+#' points(yss, col="green")
+#' 
+#' # One-compartment model with zero-order infusion, multiple doses specified by addl and ii
+#' y <- pkprofile(t.obs, cl=cl, vc=vc, dose=list(dur=dur, amt=amt, addl=9, ii=12))
+#' plot(y, log="y")
+#' 
+#' # One-compartment model with zero-order infusion, multiple doses  under steady-state conditions
+#' yss <- pkprofile(t.obs, cl=cl, vc=vc, dose=list(dur=dur, amt=amt, addl=9, ii=12, ss=1))
+#' lines(yss, col="red")
+#' 
+#' @export
 pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeric(0), ka=0,
-    dose=list(t.dose=0, amt=1, rate=0, dur=0, ii=0, addl=0, ss=0, cmt=0, lag=0, f=1)) {
+    dose=list(t.dose=0, amt=1, rate=0, dur=0, ii=24, addl=0, ss=0, cmt=0, lag=0, f=1)) {
 
     # Check arguments
     if (!(is.numeric(cl) && length(cl) == 1 && !is.na(cl) && cl > 0)) {
@@ -30,7 +158,7 @@ pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeri
     if (is.null(dose$amt))    dose$amt    <- 1
     if (is.null(dose$rate))   dose$rate   <- 0
     if (is.null(dose$dur))    dose$dur    <- 0
-    if (is.null(dose$ii))     dose$ii     <- 0
+    if (is.null(dose$ii))     dose$ii     <- 24
     if (is.null(dose$addl))   dose$addl   <- 0
     if (is.null(dose$ss))     dose$ss     <- 0
     if (is.null(dose$cmt))    dose$cmt    <- 0
@@ -41,7 +169,7 @@ pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeri
     dose$amt    [is.na(dose$amt   )] <- 1
     dose$rate   [is.na(dose$rate  )] <- 0
     dose$dur    [is.na(dose$dur   )] <- 0
-    dose$ii     [is.na(dose$ii    )] <- 0
+    dose$ii     [is.na(dose$ii    )] <- 24
     dose$addl   [is.na(dose$addl  )] <- 0
     dose$ss     [is.na(dose$ss    )] <- 0
     dose$cmt    [is.na(dose$cmt   )] <- 0
@@ -166,13 +294,16 @@ pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeri
     conc <- y[1,]/vc
 
     # Derive secondary parameters
+    Ctrough <- numeric(nrow(dose))
     Cmin <- numeric(nrow(dose))
     Cmax <- numeric(nrow(dose))
     Tmax <- numeric(nrow(dose))
     AUC <- numeric(nrow(dose))
     for (j in seq.int(nrow(dose))) {
+        i <- t.obs <= dose$t.dose[j]
+        Ctrough[j] <- tail(conc[i], 1)
         i <- t.obs >= dose$t.dose[j] & t.obs < ifelse(j < nrow(dose), dose$t.dose[j+1], Inf)
-        Cmin[j] <- head(conc[i], 1)
+        Cmin[j] <- min(conc[i])
         Cmax[j] <- max(conc[i])
         Tmax[j] <- t.obs[i][which.max(conc[i])]
         i <- t.obs >= dose$t.dose[j]
@@ -186,12 +317,16 @@ pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeri
         t.dose = dose$t.dose,
         secondary = list(
             HLterm = log(2)/min(-eigen(A[1:ncomp,1:ncomp])$values),
+            Ctrough = Ctrough,
             Cmin = Cmin,
             Cmax = Cmax,
             Tmax = Tmax,
             AUC = AUC))
 }
 
+#' print method for class pkprofile
+#'
+#' @keywords internal
 print.pkprofile <- function(x, ...) {
     t.obs <- attr(x, "t.obs")
     tt <- head(t.obs, 5)
@@ -204,6 +339,9 @@ print.pkprofile <- function(x, ...) {
     print(as.numeric(x))
 }
 
+#' plot method for class pkprofile
+#'
+#' @keywords internal
 plot.pkprofile <- function(x, y, ...) {
     if (!missing(y)) {
         NextMethod()
@@ -224,6 +362,9 @@ plot.pkprofile <- function(x, y, ...) {
     }
 }
 
+#' lines method for class pkprofile
+#'
+#' @keywords internal
 lines.pkprofile <- function(x, y, ...) {
     if (!missing(y)) {
         NextMethod()
@@ -235,6 +376,9 @@ lines.pkprofile <- function(x, y, ...) {
     }
 }
 
+#' points method for class pkprofile
+#'
+#' @keywords internal
 points.pkprofile <- function(x, y, ...) {
     if (!missing(y)) {
         NextMethod()
