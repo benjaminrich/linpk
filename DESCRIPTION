@@ -1,0 +1,13 @@
+Package: linpk
+Type: Package
+Version: 0.1
+Date: 2017-03-15
+Title: Generate Concentration-Time Profiles From Linear PK Systems
+Authors@R: person("Benjamin", "Rich", role=c("aut", "cre"), email="mail@benjaminrich.net")
+Description: Generate concentration-time profiles from linear pharmacokinetic
+  (PK) systems, possibly with first-order absoption or zero-order infusion,
+  possibly with one or more peripheral compartments, and possibly under
+  steady-state conditions. Single or multiple doses may be specified.
+License: GPL-2
+Imports: graphics,utils
+RoxygenNote: 5.0.1

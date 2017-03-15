@@ -8,7 +8,7 @@
 
 #' @param t.obs A numeric vector of times at which to observe concentrations.
 #' @param cl Central clearance parameter.
-#' @param vl Central volume parameter.
+#' @param vc Central volume parameter.
 #' @param q Inter-compartmental clearance. Can be a vector for more than one
 #' peripheral compartment, or empty for none. Must match \code{vp} in length.
 #' @param vp Peripheral volume. Can be a vector for more than one
@@ -21,9 +21,9 @@
 #'   \item{\code{t.dose}}{Dose time (default 0).}
 #'   \item{\code{amt}}{Dose amount (default 1).}
 #'   \item{\code{rate}}{Rate of zero-order infusion, or 0 to ignore (default 0).
-#'   Only one of \code{rate} and \coode{dur} should be specified.}
+#'   Only one of \code{rate} and \code{dur} should be specified.}
 #'   \item{\code{dur}}{Duration of zero-order infusion, or 0 to ignore (default 0).
-#'   Only one of \code{rate} and \coode{dur} should be specified.}
+#'   Only one of \code{rate} and \code{dur} should be specified.}
 #'   \item{\code{ii}}{Interdose interval (default 24). Only used if addl or ss are used.}
 #'   \item{\code{addl}}{Number of \emph{additional} doses (default 0). The
 #'   total number of doses given is \code{addl + 1}.}
@@ -126,6 +126,7 @@
 #' lines(yss, col="red")
 #' 
 #' @export
+#' @importFrom utils head tail
 pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeric(0), ka=0,
     dose=list(t.dose=0, amt=1, rate=0, dur=0, ii=24, addl=0, ss=0, cmt=0, lag=0, f=1)) {
 
@@ -327,6 +328,7 @@ pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeri
 #' print method for class pkprofile
 #'
 #' @keywords internal
+#' @importFrom utils head tail
 print.pkprofile <- function(x, ...) {
     t.obs <- attr(x, "t.obs")
     tt <- head(t.obs, 5)
@@ -342,6 +344,7 @@ print.pkprofile <- function(x, ...) {
 #' plot method for class pkprofile
 #'
 #' @keywords internal
+#' @importFrom graphics plot.default
 plot.pkprofile <- function(x, y, ...) {
     if (!missing(y)) {
         NextMethod()
@@ -365,6 +368,7 @@ plot.pkprofile <- function(x, y, ...) {
 #' lines method for class pkprofile
 #'
 #' @keywords internal
+#' @importFrom graphics lines.default
 lines.pkprofile <- function(x, y, ...) {
     if (!missing(y)) {
         NextMethod()
@@ -379,6 +383,7 @@ lines.pkprofile <- function(x, y, ...) {
 #' points method for class pkprofile
 #'
 #' @keywords internal
+#' @importFrom graphics points.default
 points.pkprofile <- function(x, y, ...) {
     if (!missing(y)) {
         NextMethod()
