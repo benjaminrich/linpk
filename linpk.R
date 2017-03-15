@@ -192,3 +192,56 @@ pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeri
             AUC = AUC))
 }
 
+print.pkprofile <- function(x, ...) {
+    t.obs <- attr(x, "t.obs")
+    tt <- head(t.obs, 5)
+    if (length(t.obs) > 6) {
+        tt <- c(tt, "...")
+    }
+    tt <- c(tt, tail(t.obs, 1))
+    tt <- paste0(tt, collapse=", ")
+    cat("PK concentration-time profile at times: ", tt, "\n")
+    print(as.numeric(x))
+}
+
+plot.pkprofile <- function(x, y, ...) {
+    if (!missing(y)) {
+        NextMethod()
+    } else {
+        args <- list(...)
+        if (is.null(args$xlab)) {
+            args$xlab <- "Time"
+        }
+        if (is.null(args$ylab)) {
+            args$ylab <- "Concentration"
+        }
+        if (is.null(args$type)) {
+            args$type <- "l"
+        }
+        args$x <- attr(x, "t.obs")
+        args$y <- as.numeric(x)
+        do.call(plot.default, args)
+    }
+}
+
+lines.pkprofile <- function(x, y, ...) {
+    if (!missing(y)) {
+        NextMethod()
+    } else {
+        args <- list(...)
+        args$x <- attr(x, "t.obs")
+        args$y <- as.numeric(x)
+        do.call(lines.default, args)
+    }
+}
+
+points.pkprofile <- function(x, y, ...) {
+    if (!missing(y)) {
+        NextMethod()
+    } else {
+        args <- list(...)
+        args$x <- attr(x, "t.obs")
+        args$y <- as.numeric(x)
+        do.call(points.default, args)
+    }
+}
