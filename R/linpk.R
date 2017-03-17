@@ -192,7 +192,7 @@ pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeri
 
     # Expand addl
     if (any(dose$addl > 0)) {
-        expand.addl <- do.call(rbind, lapply(seq.int(nrow(dose)), function(j) {
+        expand.addl <- do.call(rbind, lapply(seq_len(nrow(dose)), function(j) {
                     with(dose[j,],
                         data.frame(t.dose=seq(t.dose, by=ii, length.out=addl+1), j=j))
                 }))
@@ -234,7 +234,7 @@ pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeri
 
     y <- matrix(0, n, length(t.obs))
 
-    for (j in seq.int(nrow(dose))) {
+    for (j in seq_len(nrow(dose))) {
         t.dose <- dose$t.dose[j]
         amt    <- dose$amt   [j]
         rate   <- dose$rate  [j]
@@ -292,7 +292,7 @@ pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeri
         y[,i] <- y[,i] + V %*% (C * exp(L %o% t1[i]))
     }
 
-    conc <- y[1,]/vc
+    conc <- Re(y[1,]/vc)
 
     # Derive secondary parameters
     Ctrough <- numeric(nrow(dose))
@@ -300,7 +300,7 @@ pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeri
     Cmax <- numeric(nrow(dose))
     Tmax <- numeric(nrow(dose))
     AUC <- numeric(nrow(dose))
-    for (j in seq.int(nrow(dose))) {
+    for (j in seq_len(nrow(dose))) {
         i <- t.obs <= dose$t.dose[j]
         Ctrough[j] <- tail(conc[i], 1)
         i <- t.obs >= dose$t.dose[j] & t.obs < ifelse(j < nrow(dose), dose$t.dose[j+1], Inf)
@@ -317,7 +317,7 @@ pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeri
         t.obs = t.obs,
         t.dose = dose$t.dose,
         secondary = list(
-            HLterm = log(2)/min(-eigen(A[1:ncomp,1:ncomp])$values),
+            HLterm = log(2)/min(-Mod(eigen(A[1:ncomp,1:ncomp])$values)),  # Need to check this
             Ctrough = Ctrough,
             Cmin = Cmin,
             Cmax = Cmax,
