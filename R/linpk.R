@@ -325,10 +325,17 @@ pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeri
             AUC = AUC))
 }
 
-#' print method for class pkprofile
-#'
+#' Printng and plotting methods for class \code{pkprofile}.
+#' @param x An object of class \code{pkprofile}.
+#' @param y Any other object. Specifying \code{y} causes the default method to
+#' be called instead (effectively overriding the class-specific behaviour).
 #' @keywords internal
+#' @name pkprofile-methods
+NULL
+
 #' @importFrom utils head tail
+#' @rdname pkprofile-methods
+#' @export
 print.pkprofile <- function(x, ...) {
     t.obs <- attr(x, "t.obs")
     tt <- head(t.obs, 5)
@@ -339,12 +346,12 @@ print.pkprofile <- function(x, ...) {
     tt <- paste0(tt, collapse=", ")
     cat("PK concentration-time profile at times: ", tt, "\n")
     print(as.numeric(x))
+    invisible(x)
 }
 
-#' plot method for class pkprofile
-#'
-#' @keywords internal
 #' @importFrom graphics plot.default
+#' @rdname pkprofile-methods
+#' @export
 plot.pkprofile <- function(x, y, ...) {
     if (!missing(y)) {
         NextMethod()
@@ -365,10 +372,9 @@ plot.pkprofile <- function(x, y, ...) {
     }
 }
 
-#' lines method for class pkprofile
-#'
-#' @keywords internal
 #' @importFrom graphics lines.default
+#' @rdname pkprofile-methods
+#' @export
 lines.pkprofile <- function(x, y, ...) {
     if (!missing(y)) {
         NextMethod()
@@ -380,10 +386,9 @@ lines.pkprofile <- function(x, y, ...) {
     }
 }
 
-#' points method for class pkprofile
-#'
-#' @keywords internal
 #' @importFrom graphics points.default
+#' @rdname pkprofile-methods
+#' @export
 points.pkprofile <- function(x, y, ...) {
     if (!missing(y)) {
         NextMethod()
