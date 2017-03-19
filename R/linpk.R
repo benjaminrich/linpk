@@ -301,6 +301,7 @@ pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeri
     Tmax <- numeric(nrow(dose))
     AUC <- numeric(nrow(dose))
     for (j in seq_len(nrow(dose))) {
+        if (all(t.obs < dose$t.dose[j])) break
         i <- t.obs <= dose$t.dose[j]
         Ctrough[j] <- tail(conc[i], 1)
         i <- t.obs >= dose$t.dose[j] & t.obs < ifelse(j < nrow(dose), dose$t.dose[j+1], Inf)
