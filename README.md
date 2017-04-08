@@ -8,3 +8,11 @@ To install directly from GitHub:
 require(devtools)
 devtools::install_github("benjaminrich/linpk")
 ```
+
+To try a demo shiny app:
+
+``` r
+require(shiny)
+shiny::runGitHub("linpk", "benjaminrich", subdir="inst/demo")
+```
+
