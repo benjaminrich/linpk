@@ -36,6 +36,10 @@
 #'   \item{\code{lag}}{Time lag (default 0).}
 #'   \item{\code{f}}{Bioavailable fraction (default 0).}
 #' }
+#' @param sc A scaling constant for the central compartment. Concentrations are
+#' obtained by dividing amounts by this constant.
+#' @param defdose The default dose compartment when the compartment is
+#' missing or 0.
 #' @return An object of class "pkprofile", which simply a numeric vector of
 #' concentration values with some attributes attached to it. These include:
 #' \describe{
@@ -126,9 +130,16 @@
 #' lines(yss, col="red")
 #' 
 #' @export
+pkprofile <- function(x, ...) {
+    UseMethod("pkprofile")
+}
+
+#' @describeIn table1 Default method.
+#' @export
 #' @importFrom utils head tail
-pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeric(0), ka=0,
-    dose=list(t.dose=0, amt=1, rate=0, dur=0, ii=24, addl=0, ss=0, cmt=0, lag=0, f=1)) {
+pkprofile.default <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeric(0), ka=0,
+    dose=list(t.dose=0, amt=1, rate=0, dur=0, ii=24, addl=0, ss=0, cmt=0, lag=0, f=1),
+    sc=vc) {
 
     # Check arguments
     if (!(is.numeric(cl) && length(cl) == 1 && !is.na(cl) && cl > 0)) {
@@ -146,6 +157,42 @@ pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeri
     }
     oral <- (ka > 0)
 
+    ncomp <- 1 + length(q)
+    n <- ncomp + oral
+    A <- matrix(0, n, n)
+    ke <- cl/vc
+    A[1,1] <- -ke
+    for (j in seq_along(q)) {
+        # Peripheral compartment(s)
+        k1. <- q[j]/vc
+        k.1 <- q[j]/vp[j]
+        A[1,1] <- A[1,1] - k1.
+        A[1,j+1] <- k.1
+        A[j+1,1] <- k1.
+        A[j+1,j+1] <- -k.1
+    }
+    if (oral) {
+        A[1,n] <- ka
+        A[n,n] <- -ka
+        defdose <- n
+    } else {
+        defdose <- 1
+    }
+
+    pkprofile.matrix(A, t.obs=t.obs, dose=dose, defdose=defdose, sc=sc)
+}
+
+#' @describeIn table1 Matrix method.
+#' @export
+#' @importFrom utils head tail
+pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
+    dose=list(t.dose=0, amt=1, rate=0, dur=0, ii=24, addl=0, ss=0, cmt=0, lag=0, f=1),
+    defdose=1, sc=1) {
+
+    if (nrow(A) < 1 | nrow(A) != ncol(A)) {
+        stop("A must be a square matrix")
+    }
+
     if (!is.list(dose)) {
         stop("dose must be given as a list or data.frame")
     }
@@ -162,7 +209,7 @@ pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeri
     if (is.null(dose$ii))     dose$ii     <- 24
     if (is.null(dose$addl))   dose$addl   <- 0
     if (is.null(dose$ss))     dose$ss     <- 0
-    if (is.null(dose$cmt))    dose$cmt    <- 0
+    if (is.null(dose$cmt))    dose$cmt    <- defdose
     if (is.null(dose$lag))    dose$lag    <- 0
     if (is.null(dose$f))      dose$f      <- 1
 
@@ -173,7 +220,7 @@ pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeri
     dose$ii     [is.na(dose$ii    )] <- 24
     dose$addl   [is.na(dose$addl  )] <- 0
     dose$ss     [is.na(dose$ss    )] <- 0
-    dose$cmt    [is.na(dose$cmt   )] <- 0
+    dose$cmt    [is.na(dose$cmt   )] <- defdose
     dose$lag    [is.na(dose$lag   )] <- 0
     dose$f      [is.na(dose$f     )] <- 1
 
@@ -203,29 +250,7 @@ pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeri
 
     dose <- dose[order(dose$t.dose),] # Time order
 
-    ncomp <- 1 + length(q)
-    n <- ncomp + oral
-    A <- matrix(0, n, n)
-    ke <- cl/vc
-    A[1,1] <- -ke
-    for (j in seq_along(q)) {
-        # Peripheral compartment(s)
-        k1. <- q[j]/vc
-        k.1 <- q[j]/vp[j]
-        A[1,1] <- A[1,1] - k1.
-        A[1,j+1] <- k.1
-        A[j+1,1] <- k1.
-        A[j+1,j+1] <- -k.1
-    }
-    if (oral) {
-        A[1,n] <- ka
-        A[n,n] <- -ka
-        dose$cmt[dose$cmt == 0] <- n
-    } else {
-        dose$cmt[dose$cmt == 0] <- 1
-    }
-
-
+    n <- nrow(A)
     eigenA <- eigen(A)
     L <- eigenA$value
     V <- eigenA$vector
@@ -292,9 +317,33 @@ pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeri
         y[,i] <- y[,i] + V %*% (C * exp(L %o% t1[i]))
     }
 
-    conc <- Re(y[1,]/vc)
+    conc <- Re(y[1,]/sc[1])
 
-    # Derive secondary parameters
+    structure(conc,
+        class = c("pkprofile", class(conc)),
+        t.obs = t.obs,
+        dose = dose,
+        A = A,
+        L = L,
+        V = V)
+}
+
+#' Derive secondary PK parameters.
+#' @param x A object of class \code\link{pkprofile}}.
+#' @return A \code{list} containing the following:
+#' \describe{
+#'   \item{\code{HTterm}}{Terminal half-life.}
+#'   \item{\code{Ctrough}}{Concentration at the time of each dose.}
+#'   \item{\code{Cmin}}{Minimum concentration over the interval between doses.}
+#'   \item{\code{Cmax}}{Maximum concentration over the interval between doses.}
+#'   \item{\code{Tmax}}{Time of the maximum concentration over the interval between doses.}
+#'   \item{\code{AUC}}{Area under the concentration-time curve over the interval between doses.}}
+#' 
+secondary <- function(x) {
+    conc <- as.numeric(x)
+    t.obs <- attr(x, "t.obs")
+    dose <- attr(x, "dose")
+
     Ctrough <- numeric(nrow(dose))
     Cmin <- numeric(nrow(dose))
     Cmax <- numeric(nrow(dose))
@@ -313,20 +362,26 @@ pkprofile <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeri
     }
     AUC <- c(rev(diff(rev(AUC))), tail(AUC, 1))
 
-    structure(conc,
-        class = "pkprofile",
-        t.obs = t.obs,
-        t.dose = dose$t.dose,
-        secondary = list(
-            HLterm = log(2)/min(-Mod(eigen(A[1:ncomp,1:ncomp])$values)),  # Need to check this
-            Ctrough = Ctrough,
-            Cmin = Cmin,
-            Cmax = Cmax,
-            Tmax = Tmax,
-            AUC = AUC))
+    L <- attr(x, "L")
+    HLterm <- if (any(Re(L) >= 0)) Inf else log(2)/min(-Re(L))
+
+    list(HLterm = HLterm,
+        Ctrough = Ctrough,
+        Cmin = Cmin,
+        Cmax = Cmax,
+        Tmax = Tmax,
+        AUC = AUC)
 }
 
-#' Printng and plotting methods for class \code{pkprofile}.
+#' Coerse a \code{pkprofile} to a \code{data.frame}
+#' @param x An object of class \code{pkprofile}.
+#' @return A \code{data.frame} with columns \code{time} and \code{conc}.
+#' @export
+as.data.frame.pkprofile <- function(x, ...) {
+    data.frame(time=attr(x, "t.obs"), conc=as.numeric(x))
+}
+
+#' Printing and plotting methods for class \code{pkprofile}.
 #' @param x An object of class \code{pkprofile}.
 #' @param y Any other object. Specifying \code{y} causes the default method to
 #' be called instead (effectively overriding the class-specific behaviour).
