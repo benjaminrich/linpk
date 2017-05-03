@@ -6,7 +6,7 @@
 \alias{plot.pkprofile}
 \alias{points.pkprofile}
 \alias{print.pkprofile}
-\title{Printng and plotting methods for class \code{pkprofile}.}
+\title{Printing and plotting methods for class \code{pkprofile}.}
 \usage{
 \method{print}{pkprofile}(x, ...)
 
@@ -23,7 +23,7 @@
 be called instead (effectively overriding the class-specific behaviour).}
 }
 \description{
-Printng and plotting methods for class \code{pkprofile}.
+Printing and plotting methods for class \code{pkprofile}.
 }
 \keyword{internal}
 

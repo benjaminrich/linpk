@@ -2,13 +2,25 @@
 % Please edit documentation in R/linpk.R
 \name{pkprofile}
 \alias{pkprofile}
+\alias{pkprofile.default}
+\alias{pkprofile.matrix}
 \title{Generate a concentration-time profile.}
 \usage{
-pkprofile(t.obs = seq(0, 24, 0.1), cl = 1, vc = 5, q = numeric(0),
-  vp = numeric(0), ka = 0, dose = list(t.dose = 0, amt = 1, rate = 0, dur
-  = 0, ii = 24, addl = 0, ss = 0, cmt = 0, lag = 0, f = 1))
+pkprofile(...)
+
+\method{pkprofile}{default}(t.obs = seq(0, 24, 0.1), cl = 1, vc = 5,
+  q = numeric(0), vp = numeric(0), ka = 0, dose = list(t.dose = 0, amt =
+  1, rate = 0, dur = 0, ii = 24, addl = 0, ss = 0, cmt = 0, lag = 0, f = 1),
+  sc = vc, ...)
+
+\method{pkprofile}{matrix}(A, t.obs = seq(0, 24, 0.1), dose = list(t.dose =
+  0, amt = 1, rate = 0, dur = 0, ii = 24, addl = 0, ss = 0, cmt = 0, lag = 0, f
+  = 1), defdose = 1, sc = 1, savestate = c("none", "final", "all"),
+  initstate = NULL, ...)
 }
 \arguments{
+\item{...}{Further arguments passed along to other methods.}
+
 \item{t.obs}{A numeric vector of times at which to observe concentrations.}
 
 \item{cl}{Central clearance parameter.}
@@ -45,6 +57,20 @@ May contain the following elements:
   \item{\code{lag}}{Time lag (default 0).}
   \item{\code{f}}{Bioavailable fraction (default 0).}
 }}
+
+\item{sc}{A scaling constant for the central compartment. Concentrations are
+obtained by dividing amounts by this constant.}
+
+\item{A}{A matrix of first-order rate constants between the compartments.}
+
+\item{defdose}{The default dose compartment when the compartment is
+missing or 0.}
+
+\item{savestate}{Whether to save the full state at either the final
+observation timepoint or all observation timepoints.}
+
+\item{initstate}{A numeric vector containing values to initialize the
+compartments.}
 }
 \value{
 An object of class "pkprofile", which simply a numeric vector of
@@ -78,6 +104,12 @@ zero-order infusion, possibly with one or more peripheral compartments, and
 possibly under steady-state conditions. Single or multiple doses may be
 specified.
 }
+\section{Methods (by class)}{
+\itemize{
+\item \code{default}: Default method.
+
+\item \code{matrix}: Matrix method.
+}}
 \examples{
 # Default values, a bolus injection
 y <- pkprofile()
