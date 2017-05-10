@@ -12,7 +12,12 @@ devtools::install_github("benjaminrich/linpk")
 To try a demo shiny app:
 
 ``` r
+# Make sure the required packages are installed
 require(shiny)
-shiny::runGitHub("linpk", "benjaminrich", subdir="inst/demo")
+require(shinyjs)
+require(shinyAce)
+require(dygraphs)
+require(linpk)  # See above for installation
+shiny::runGitHub("linpk", "benjaminrich", subdir="inst/demo-app")
 ```
 
