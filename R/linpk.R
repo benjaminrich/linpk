@@ -301,9 +301,6 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
         # Default dose compartment
         if (cmt == 0) cmt <- defdose
 
-        # Keep track of the concentration at time of dose (Ctrough)
-        dose$conc[j] <- Re(y[1,evid==1][j])/sc[1]
-
         tad <- t.aug - t.dose - lag
 
         t1 <- tad
@@ -355,6 +352,9 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
     state <- Re(y[, evid==0, drop=FALSE])
     finalstate <- state[, ncol(state), drop=FALSE]
     conc <- state[1,]/sc[1]
+
+    # Keep track of the concentration at time of dose (Ctrough)
+    dose$conc <- Re(y[1, evid==1, drop=TRUE])/sc[1]
 
     structure(conc,
         class      = c("pkprofile", class(conc)),
