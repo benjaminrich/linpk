@@ -187,7 +187,16 @@ function(input, output, session) {
     as.data.frame(sim())
   })
 
-  output$dygraph <- renderDygraph({
+  #output$plot <- renderPlot({
+  #  validate(need(!is.null(sim.df()), "Invalid data"))
+  #  plot(conc ~ time, data=sim.df(), type="l", col="blue", lwd=1.1,
+  #    ylim=c(0, max(sim())),
+  #    main="PK Concentration-Time Profile",
+  #    ylab=sprintf("Concentration (%s)", gsub("ug", "\U03BCg", input$concu)),
+  #    xlab=sprintf("Time (%s)", input$timeu))
+  #})
+
+  output$plot <- renderDygraph({
     validate(need(!is.null(sim.df()), "Invalid data"))
     dygraph(sim.df(), main="PK Concentration-Time Profile") %>%
       dySeries("conc", label="Model 1") %>%
@@ -206,9 +215,23 @@ function(input, output, session) {
     tab
   })
 
-  output$secondary <- DT::renderDataTable(format(simtab()))
+  output$secondary <- DT::renderDataTable(format(simtab()), options=list(dom="t"))
+
+  output$pkprofile <- DT::renderDataTable(format(sim.df()), options=list(dom="tip"))
+
+  output$download_btn <- downloadHandler(
+    filename="pkprofile.csv",
+    content=function(file) {
+      tryCatch({
+        write.csv(format(sim.df()), file, row.names=FALSE)
+      },
+      error = function(err) {
+        stop(err$message)
+      })
+    })
 
   observe({
+    input$toptab  # Create dependency
     args <- character(0)
     args <- c(args, sprintf("t.obs = seq(0, %s, length.out=1000)", input$timerange))
     args <- c(args, sprintf("cl = %s", input$cl))
