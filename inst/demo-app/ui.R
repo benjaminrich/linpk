@@ -9,9 +9,14 @@ fluidPage(
 
   #titlePanel("Simulate a Concentration-Time Profile"),
 
-  tabsetPanel(
-    tabPanel("Plot", dygraphOutput("dygraph")),
+  tabsetPanel(id="toptab",
+    #tabPanel("Plot", plotOutput("plot")),
+    tabPanel("Plot", dygraphOutput("plot")),
     tabPanel("Table", DT::dataTableOutput("secondary")),
+    tabPanel("Download",
+      DT::dataTableOutput("pkprofile", width="400px"),
+      downloadButton("download_btn")
+      ),
     tabPanel("Code", aceEditor("code", value="", theme="xcode", mode="r",
                                readOnly=TRUE, highlightActiveLine=FALSE))
     ),
@@ -124,4 +129,5 @@ fluidPage(
     )
   )
 
+# vim: ts=2 sw=2
 
