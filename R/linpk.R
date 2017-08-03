@@ -41,8 +41,6 @@
 #' @param A A matrix of first-order rate constants between the compartments.
 #' @param defdose The default dose compartment when the compartment is
 #' missing or 0.
-#' @param savestate Whether to save the full state at either the final
-#' observation timepoint or all observation timepoints.
 #' @param initstate A numeric vector containing values to initialize the
 #' compartments.
 #' @param ... Further arguments passed along to other methods.
@@ -192,9 +190,7 @@ pkprofile.default <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), v
 #' @importFrom utils head tail
 pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
     dose=list(t.dose=0, amt=1, rate=0, dur=0, ii=24, addl=0, ss=0, cmt=0, lag=0, f=1),
-    defdose=1, sc=1, savestate=c("none", "final", "all"), initstate=NULL, ...) {
-
-    savestate <- match.arg(savestate)
+    defdose=1, sc=1, initstate=NULL, ...) {
 
     if (nrow(A) < 1 | nrow(A) != ncol(A)) {
         stop("A must be a square matrix")
@@ -359,7 +355,6 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
     structure(conc,
         class      = c("pkprofile", class(conc)),
         t.obs      = t.obs,
-        savestate  = savestate,
         state      = state,
         finalstate = finalstate,
         dose       = dose,
@@ -368,6 +363,24 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
         A          = A,
         L          = L,
         V          = V)
+}
+
+#' Get the final state of a linear PK system.
+#' @param x A object of class \code{\link{pkprofile}}.
+#' @return A \code{numeric} vector containing the state of each compartment at
+#' the final observation time.
+#' @examples
+#' # Administer a dose at time 0 and a second dose using the final state
+#' # from the first dose (at 12h) as the initial state for the second dose.
+#' t.obs <- seq(0, 12, 0.1)
+#' y <- pkprofile(t.obs, cl=0.25, vc=5, ka=1, dose=list(t.dose=0, amt=1))
+#' finalstate(y)
+#' y2 <- pkprofile(t.obs, cl=0.25, vc=5, ka=1, dose=list(t.dose=0, amt=1), initstate=finalstate(y))
+#' plot(y, xlim=c(0, 24), ylim=c(0, max(y2)), col="blue")  # First dose
+#' lines(t.obs+12, y2, col="red")                          # Second dose
+#' @export
+finalstate <- function(x) {
+    as.numeric(attr(x, "finalstate"))
 }
 
 #' Derive secondary PK parameters.
@@ -452,11 +465,14 @@ secondary <- function(x) {
 #' Coerse a \code{pkprofile} to a \code{data.frame}
 #' @param x An object of class \code{pkprofile}.
 #' @param ... Further arguments passed along.
-#' @return A \code{data.frame} with columns \code{time} and \code{conc}.
+#' @param .state Include the complete state along with \code{time} and \code{conc}?
+#' @return A \code{data.frame} with columns \code{time} and \code{conc}. If
+#' \code{.state == TRUE}, then the complete state is appended (as a matrix
+#' column).
 #' @export
-as.data.frame.pkprofile <- function(x, ...) {
+as.data.frame.pkprofile <- function(x, ..., .state=FALSE) {
     df <- data.frame(time=attr(x, "t.obs"), conc=as.numeric(x), ...)
-    if (attr(x, "savestate") == "all") {
+    if (.state) {
         df$state=t(attr(x, "state"))
     }
     df
