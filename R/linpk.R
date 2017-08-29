@@ -21,9 +21,9 @@
 #'   \item{\code{t.dose}}{Dose time (default 0).}
 #'   \item{\code{amt}}{Dose amount (default 1).}
 #'   \item{\code{rate}}{Rate of zero-order infusion, or 0 to ignore (default 0).
-#'   Only one of \code{rate} and \code{dur} should be specified.}
+#'   Only one of \code{rate} and \code{dur} should be specified unless \code{amt} is missing.}
 #'   \item{\code{dur}}{Duration of zero-order infusion, or 0 to ignore (default 0).
-#'   Only one of \code{rate} and \code{dur} should be specified.}
+#'   Only one of \code{rate} and \code{dur} should be specified unless \code{amt} is missing.}
 #'   \item{\code{ii}}{Interdose interval (default 24). Only used if addl or ss are used.}
 #'   \item{\code{addl}}{Number of \emph{additional} doses (default 0). The
 #'   total number of doses given is \code{addl + 1}.}
@@ -41,8 +41,6 @@
 #' @param A A matrix of first-order rate constants between the compartments.
 #' @param defdose The default dose compartment when the compartment is
 #' missing or 0.
-#' @param savestate Whether to save the full state at either the final
-#' observation timepoint or all observation timepoints.
 #' @param initstate A numeric vector containing values to initialize the
 #' compartments.
 #' @param ... Further arguments passed along to other methods.
@@ -192,9 +190,7 @@ pkprofile.default <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), v
 #' @importFrom utils head tail
 pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
     dose=list(t.dose=0, amt=1, rate=0, dur=0, ii=24, addl=0, ss=0, cmt=0, lag=0, f=1),
-    defdose=1, sc=1, savestate=c("none", "final", "all"), initstate=NULL, ...) {
-
-    savestate <- match.arg(savestate)
+    defdose=1, sc=1, initstate=NULL, ...) {
 
     if (nrow(A) < 1 | nrow(A) != ncol(A)) {
         stop("A must be a square matrix")
@@ -213,6 +209,12 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
     }
     if (!is.null(dose$ss) && any(dose$ss > 0) && is.null(dose$ii)) {
         stop("ss requires that ii be specified")
+    }
+    if (!is.null(dose$rate) & !is.null(dose$dur) & !is.null(dose$amt)) { 
+        if (any(!is.na(dose$rate) & !is.na(dose$dur) & !is.na(dose$amt) &
+                dose$rate > 0 & dose$dur > 0 & dose$rate != (dose$amt / dose$dur))) {
+            stop("amt, rate and dur are inconsistent for infusion")
+        }
     }
 
     # Defaults
@@ -245,13 +247,12 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
     dose$conc <- NA  # Keep track of the concentration at time of dose (Ctrough)
 
     # Zero-order infusion
-    if (any(dose$rate > 0 & dose$dur > 0 & dose$rate != (dose$amt / dose$dur))) {
-        warning("Both rate and dur specified for infusion; only rate will be considered")
-    }
-    i <- dose$rate == 0 & dose$dur > 0
-    dose$rate[i] <- dose$amt[i] / dose$dur[i]
-    i <- dose$rate > 0
-    dose$dur[i] <- dose$amt[i] / dose$rate[i]
+    i1 <- dose$rate == 0 & dose$dur > 0
+    i2 <- dose$rate > 0  & dose$dur == 0
+    i3 <- dose$rate > 0  & dose$dur > 0
+    dose$rate[i1] <- dose$amt[i1] / dose$dur[i1]
+    dose$dur[i2] <- dose$amt[i2] / dose$rate[i2]
+    dose$amt[i3] <- dose$rate[i3] * dose$dur[i3]
 
     # Expand addl
     if (any(dose$addl > 0)) {
@@ -317,7 +318,7 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
                 Q2 <- exp(L * dur) / (1 - exp(L * dur))
                 y0 <- drop(V %*% (solve(qrV, ystat) * Q1 / Q2))
                 if (lag > 0) {
-                    i <- tad >= 0 & tad < lag
+                    i <- tad < 0 & tad >= -lag
                     t1[i] <- t1[i] %% ii
                 }
             } else {
@@ -336,7 +337,7 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
                 y[,t1 >= 0] <- 0  # Reset
                 y0 <- drop(V %*% (solve(qrV, delta) / (1 - exp(L * ii))))
                 if (lag > 0) {
-                    i <- tad >= 0 & tad < lag
+                    i <- tad < 0 & tad >= -lag
                     t1[i] <- t1[i] %% ii
                 }
             } else {
@@ -359,7 +360,6 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
     structure(conc,
         class      = c("pkprofile", class(conc)),
         t.obs      = t.obs,
-        savestate  = savestate,
         state      = state,
         finalstate = finalstate,
         dose       = dose,
@@ -368,6 +368,24 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
         A          = A,
         L          = L,
         V          = V)
+}
+
+#' Get the final state of a linear PK system.
+#' @param x A object of class \code{\link{pkprofile}}.
+#' @return A \code{numeric} vector containing the state of each compartment at
+#' the final observation time.
+#' @examples
+#' # Administer a dose at time 0 and a second dose using the final state
+#' # from the first dose (at 12h) as the initial state for the second dose.
+#' t.obs <- seq(0, 12, 0.1)
+#' y <- pkprofile(t.obs, cl=0.25, vc=5, ka=1, dose=list(t.dose=0, amt=1))
+#' finalstate(y)
+#' y2 <- pkprofile(t.obs, cl=0.25, vc=5, ka=1, dose=list(t.dose=0, amt=1), initstate=finalstate(y))
+#' plot(y, xlim=c(0, 24), ylim=c(0, max(y2)), col="blue")  # First dose
+#' lines(t.obs+12, y2, col="red")                          # Second dose
+#' @export
+finalstate <- function(x) {
+    as.numeric(attr(x, "finalstate"))
 }
 
 #' Derive secondary PK parameters.
@@ -452,11 +470,14 @@ secondary <- function(x) {
 #' Coerse a \code{pkprofile} to a \code{data.frame}
 #' @param x An object of class \code{pkprofile}.
 #' @param ... Further arguments passed along.
-#' @return A \code{data.frame} with columns \code{time} and \code{conc}.
+#' @param .state Include the complete state along with \code{time} and \code{conc}?
+#' @return A \code{data.frame} with columns \code{time} and \code{conc}. If
+#' \code{.state == TRUE}, then the complete state is appended (as a matrix
+#' column).
 #' @export
-as.data.frame.pkprofile <- function(x, ...) {
+as.data.frame.pkprofile <- function(x, ..., .state=FALSE) {
     df <- data.frame(time=attr(x, "t.obs"), conc=as.numeric(x), ...)
-    if (attr(x, "savestate") == "all") {
+    if (.state) {
         df$state=t(attr(x, "state"))
     }
     df

@@ -15,8 +15,7 @@ pkprofile(...)
 
 \method{pkprofile}{matrix}(A, t.obs = seq(0, 24, 0.1), dose = list(t.dose =
   0, amt = 1, rate = 0, dur = 0, ii = 24, addl = 0, ss = 0, cmt = 0, lag = 0, f
-  = 1), defdose = 1, sc = 1, savestate = c("none", "final", "all"),
-  initstate = NULL, ...)
+  = 1), defdose = 1, sc = 1, initstate = NULL, ...)
 }
 \arguments{
 \item{...}{Further arguments passed along to other methods.}
@@ -42,9 +41,9 @@ May contain the following elements:
   \item{\code{t.dose}}{Dose time (default 0).}
   \item{\code{amt}}{Dose amount (default 1).}
   \item{\code{rate}}{Rate of zero-order infusion, or 0 to ignore (default 0).
-  Only one of \code{rate} and \code{dur} should be specified.}
+  Only one of \code{rate} and \code{dur} should be specified unless \code{amt} is missing.}
   \item{\code{dur}}{Duration of zero-order infusion, or 0 to ignore (default 0).
-  Only one of \code{rate} and \code{dur} should be specified.}
+  Only one of \code{rate} and \code{dur} should be specified unless \code{amt} is missing.}
   \item{\code{ii}}{Interdose interval (default 24). Only used if addl or ss are used.}
   \item{\code{addl}}{Number of \emph{additional} doses (default 0). The
   total number of doses given is \code{addl + 1}.}
@@ -65,9 +64,6 @@ obtained by dividing amounts by this constant.}
 
 \item{defdose}{The default dose compartment when the compartment is
 missing or 0.}
-
-\item{savestate}{Whether to save the full state at either the final
-observation timepoint or all observation timepoints.}
 
 \item{initstate}{A numeric vector containing values to initialize the
 compartments.}
