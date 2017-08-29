@@ -41,9 +41,9 @@ May contain the following elements:
   \item{\code{t.dose}}{Dose time (default 0).}
   \item{\code{amt}}{Dose amount (default 1).}
   \item{\code{rate}}{Rate of zero-order infusion, or 0 to ignore (default 0).
-  Only one of \code{rate} and \code{dur} should be specified.}
+  Only one of \code{rate} and \code{dur} should be specified unless \code{amt} is missing.}
   \item{\code{dur}}{Duration of zero-order infusion, or 0 to ignore (default 0).
-  Only one of \code{rate} and \code{dur} should be specified.}
+  Only one of \code{rate} and \code{dur} should be specified unless \code{amt} is missing.}
   \item{\code{ii}}{Interdose interval (default 24). Only used if addl or ss are used.}
   \item{\code{addl}}{Number of \emph{additional} doses (default 0). The
   total number of doses given is \code{addl + 1}.}

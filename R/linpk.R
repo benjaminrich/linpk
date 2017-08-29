@@ -21,9 +21,9 @@
 #'   \item{\code{t.dose}}{Dose time (default 0).}
 #'   \item{\code{amt}}{Dose amount (default 1).}
 #'   \item{\code{rate}}{Rate of zero-order infusion, or 0 to ignore (default 0).
-#'   Only one of \code{rate} and \code{dur} should be specified.}
+#'   Only one of \code{rate} and \code{dur} should be specified unless \code{amt} is missing.}
 #'   \item{\code{dur}}{Duration of zero-order infusion, or 0 to ignore (default 0).
-#'   Only one of \code{rate} and \code{dur} should be specified.}
+#'   Only one of \code{rate} and \code{dur} should be specified unless \code{amt} is missing.}
 #'   \item{\code{ii}}{Interdose interval (default 24). Only used if addl or ss are used.}
 #'   \item{\code{addl}}{Number of \emph{additional} doses (default 0). The
 #'   total number of doses given is \code{addl + 1}.}
@@ -210,6 +210,12 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
     if (!is.null(dose$ss) && any(dose$ss > 0) && is.null(dose$ii)) {
         stop("ss requires that ii be specified")
     }
+    if (!is.null(dose$rate) & !is.null(dose$dur) & !is.null(dose$amt)) { 
+        if (any(!is.na(dose$rate) & !is.na(dose$dur) & !is.na(dose$amt) &
+                dose$rate > 0 & dose$dur > 0 & dose$rate != (dose$amt / dose$dur))) {
+            stop("amt, rate and dur are inconsistent for infusion")
+        }
+    }
 
     # Defaults
     if (is.null(dose$t.dose)) dose$t.dose <- 0
@@ -241,13 +247,12 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
     dose$conc <- NA  # Keep track of the concentration at time of dose (Ctrough)
 
     # Zero-order infusion
-    if (any(dose$rate > 0 & dose$dur > 0 & dose$rate != (dose$amt / dose$dur))) {
-        warning("Both rate and dur specified for infusion; only rate will be considered")
-    }
-    i <- dose$rate == 0 & dose$dur > 0
-    dose$rate[i] <- dose$amt[i] / dose$dur[i]
-    i <- dose$rate > 0
-    dose$dur[i] <- dose$amt[i] / dose$rate[i]
+    i1 <- dose$rate == 0 & dose$dur > 0
+    i2 <- dose$rate > 0  & dose$dur == 0
+    i3 <- dose$rate > 0  & dose$dur > 0
+    dose$rate[i1] <- dose$amt[i1] / dose$dur[i1]
+    dose$dur[i2] <- dose$amt[i2] / dose$rate[i2]
+    dose$amt[i3] <- dose$rate[i3] * dose$dur[i3]
 
     # Expand addl
     if (any(dose$addl > 0)) {
