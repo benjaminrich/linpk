@@ -318,7 +318,7 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
                 Q2 <- exp(L * dur) / (1 - exp(L * dur))
                 y0 <- drop(V %*% (solve(qrV, ystat) * Q1 / Q2))
                 if (lag > 0) {
-                    i <- tad >= 0 & tad < lag
+                    i <- tad < 0 & tad >= -lag
                     t1[i] <- t1[i] %% ii
                 }
             } else {
@@ -337,7 +337,7 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
                 y[,t1 >= 0] <- 0  # Reset
                 y0 <- drop(V %*% (solve(qrV, delta) / (1 - exp(L * ii))))
                 if (lag > 0) {
-                    i <- tad >= 0 & tad < lag
+                    i <- tad < 0 & tad >= -lag
                     t1[i] <- t1[i] %% ii
                 }
             } else {
