@@ -4,24 +4,41 @@
 \alias{secondary}
 \title{Derive secondary PK parameters.}
 \usage{
-secondary(x)
+secondary(x, From = NULL, To = NULL, include.dose.times = T)
 }
 \arguments{
 \item{x}{A object of class \code{\link{pkprofile}}.}
+
+\item{From}{A vector of interval start times. The defaults is the times of the doses.}
+
+\item{To}{A vector of interval end times. The defaults is the time of the next dose,
+or last observation time.}
+
+\item{include.dose.times}{Should dose times (and end of infusion times) be
+considered in addition to the simulation times?}
 }
 \value{
-A \code{list} containing the following:
+A \code{data.frame} with one row for each time interval and with the
+following columns:
 \describe{
-  \item{\code{Cmax}}{Maximum concentration over the interval between doses.}
-  \item{\code{Tmax}}{Time of the maximum concentration over the interval between doses.}
-  \item{\code{Cmin}}{Minimum concentration over the interval between doses.}
-  \item{\code{Tmin}}{Time of the minimum concentration over the interval between doses.}
-  \item{\code{Ctrough}}{Concentration at the time of each dose (i.e. just prior to the dose).}
-  \item{\code{Ttrough}}{Time of each dose.}
-  \item{\code{Cave}}{Average concentration over the interval between doses
-  (calculated by the trapezoid rule).}
+  \item{\code{From}}{The time of the start of the interval. Can differ from
+  the specified start time because it always corresponds to an actual data
+  point.}
+  \item{\code{To}}{The time of the end of the interval. Can differ from the
+  specified end time because it always corresponds to an actual data point.}
+  \item{\code{N}}{The number of distinct data points in the interval used to
+  derive \code{AUC}, \code{Cmax}, etc.}
+  \item{\code{Ctrough}}{Concentration at the time of dose (i.e. just prior
+  to the dose). Only present if the start of the interval corresponds to a
+  dose time.}
+  \item{\code{Cmin}}{Minimum concentration over the interval.}
+  \item{\code{Tmin}}{Time of the minimum concentration over the interval.}
+  \item{\code{Cmax}}{Maximum concentration over the interval.}
+  \item{\code{Tmax}}{Time of the maximum concentration over the interval.}
+  \item{\code{Cave}}{Average concentration over the interval (calculated by
+  the trapezoid rule).}
   \item{\code{AUC}}{Area under the concentration-time curve over the
-  interval between doses (calculated by the trapezoid rule).}}
+  interval (calculated by the trapezoid rule).}}
 }
 \description{
 Derive secondary PK parameters.
@@ -30,11 +47,14 @@ Derive secondary PK parameters.
 t.obs <- seq(0, 24*4, 0.1)
 y <- pkprofile(t.obs, cl=0.25, vc=5, ka=1, dose=list(t.dose=0, amt=1, addl=6, ii=12))
 secondary(y)
+secondary(y, 0, 48)
+secondary(y, 0, Inf)
+sum(secondary(y)$AUC)  # Same as above
 plot(y)
 with(secondary(y), points(Tmax, Cmax, pch=19, col="blue"))
 with(secondary(y), points(Tmin, Cmin, pch=19, col="red"))
-with(secondary(y), points(Ttrough, Ctrough, pch=19, col="green"))
-with(secondary(y), points(Ttrough + 6, Cave, pch=19, col="purple", cex=2))
+with(secondary(y), points(From, Ctrough, pch=19, col="green"))
+with(secondary(y), points(From + 6, Cave, pch=19, col="purple", cex=2))
 
 }
 

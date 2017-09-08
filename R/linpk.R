@@ -278,6 +278,11 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
 
     t.aug <- c(t.obs, dose$t.dose)
     evid <- c(rep(0, length(t.obs)), rep(1, nrow(dose)))
+    if (any(dose$rate > 0)) {
+        dose$t.eoi <- dose$t.dose + dose$dur
+        t.aug <- c(t.aug, dose$t.eoi)
+        evid <- c(evid, rep(2, nrow(dose)))
+    }
     y <- matrix(0, n, length(t.aug))
 
     if (!is.null(initstate)) {
@@ -356,8 +361,13 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
     finalstate <- state[, ncol(state), drop=FALSE]
     conc <- state[1,]/sc[1]
 
-    # Keep track of the concentration at time of dose (Ctrough)
+    # Keep track of the concentration at time of dose (Ctrough), and EOI
     dose$conc <- Re(y[1, evid==1, drop=TRUE])/sc[1]
+    if (any(dose$rate > 0)) {
+        dose$conc.eoi <- Re(y[1, evid==2, drop=TRUE])/sc[1]
+        dose$conc.eoi[dose$rate == 0] <- NA
+        dose$t.eoi[dose$rate == 0] <- NA
+    }
 
     structure(conc,
         class      = c("pkprofile", class(conc)),
@@ -393,67 +403,113 @@ finalstate <- function(x) {
 
 #' Derive secondary PK parameters.
 #' @param x A object of class \code{\link{pkprofile}}.
-#' @return A \code{list} containing the following:
+#' @param From A vector of interval start times. The defaults is the times of the doses.
+#' @param To A vector of interval end times. The defaults is the time of the next dose,
+#' or last observation time.
+#' @param include.dose.times Should dose times (and end of infusion times) be
+#' considered in addition to the simulation times?
+#' @return A \code{data.frame} with one row for each time interval and with the
+#' following columns:
 #' \describe{
-#'   \item{\code{Cmax}}{Maximum concentration over the interval between doses.}
-#'   \item{\code{Tmax}}{Time of the maximum concentration over the interval between doses.}
-#'   \item{\code{Cmin}}{Minimum concentration over the interval between doses.}
-#'   \item{\code{Tmin}}{Time of the minimum concentration over the interval between doses.}
-#'   \item{\code{Ctrough}}{Concentration at the time of each dose (i.e. just prior to the dose).}
-#'   \item{\code{Ttrough}}{Time of each dose.}
-#'   \item{\code{Cave}}{Average concentration over the interval between doses
-#'   (calculated by the trapezoid rule).}
+#'   \item{\code{From}}{The time of the start of the interval. Can differ from
+#'   the specified start time because it always corresponds to an actual data
+#'   point.}
+#'   \item{\code{To}}{The time of the end of the interval. Can differ from the
+#'   specified end time because it always corresponds to an actual data point.}
+#'   \item{\code{N}}{The number of distinct data points in the interval used to
+#'   derive \code{AUC}, \code{Cmax}, etc.}
+#'   \item{\code{Ctrough}}{Concentration at the time of dose (i.e. just prior
+#'   to the dose). Only present if the start of the interval corresponds to a
+#'   dose time.}
+#'   \item{\code{Cmin}}{Minimum concentration over the interval.}
+#'   \item{\code{Tmin}}{Time of the minimum concentration over the interval.}
+#'   \item{\code{Cmax}}{Maximum concentration over the interval.}
+#'   \item{\code{Tmax}}{Time of the maximum concentration over the interval.}
+#'   \item{\code{Cave}}{Average concentration over the interval (calculated by
+#'   the trapezoid rule).}
 #'   \item{\code{AUC}}{Area under the concentration-time curve over the
-#'   interval between doses (calculated by the trapezoid rule).}}
+#'   interval (calculated by the trapezoid rule).}}
 #' @examples
 #' t.obs <- seq(0, 24*4, 0.1)
 #' y <- pkprofile(t.obs, cl=0.25, vc=5, ka=1, dose=list(t.dose=0, amt=1, addl=6, ii=12))
 #' secondary(y)
+#' secondary(y, 0, 48)
+#' secondary(y, 0, Inf)
+#' sum(secondary(y)$AUC)  # Same as above
 #' plot(y)
 #' with(secondary(y), points(Tmax, Cmax, pch=19, col="blue"))
 #' with(secondary(y), points(Tmin, Cmin, pch=19, col="red"))
-#' with(secondary(y), points(Ttrough, Ctrough, pch=19, col="green"))
-#' with(secondary(y), points(Ttrough + 6, Cave, pch=19, col="purple", cex=2))
+#' with(secondary(y), points(From, Ctrough, pch=19, col="green"))
+#' with(secondary(y), points(From + 6, Cave, pch=19, col="purple", cex=2))
 #' 
 #' @export
-secondary <- function(x) {
+secondary <- function(x, From=NULL, To=NULL, include.dose.times=T) {
     conc <- as.numeric(x)
-    t.obs <- attr(x, "t.obs")
+    time <- attr(x, "t.obs")
     dose <- attr(x, "dose")
 
-    Ctrough <- dose$conc
-    Ttrough <- dose$t.dose
-    Cmin <- numeric(nrow(dose))
-    Cmax <- numeric(nrow(dose))
-    Cave <- numeric(nrow(dose))
-    Tmax <- numeric(nrow(dose))
-    Tmin <- numeric(nrow(dose))
-    AUC <- numeric(nrow(dose))
-    for (j in seq_len(nrow(dose))) {
-        if (all(t.obs < dose$t.dose[j])) break
-        i <- t.obs >= dose$t.dose[j] & t.obs < ifelse(j < nrow(dose), dose$t.dose[j+1], Inf)
+    if (include.dose.times) {
+        time <- c(time, dose$t.dose)
+        conc <- c(conc, dose$conc)
+        if (!is.null(dose$t.eoi)) {
+            time <- c(time, dose$t.eoi)
+            conc <- c(conc, dose$conc.eoi)
+        }
+    }
+    o <- order(time)
+    time <- time[o]
+    conc <- conc[o]
+    duplicate <- c(FALSE, diff(time) == 0 & diff(conc) == 0)
+    time <- time[!duplicate]
+    conc <- conc[!duplicate]
+
+    if (is.null(From)) {
+        From <- dose$t.dose
+    }
+    if (is.null(To)) {
+        To <- c(dose$t.dose[-1], max(time))
+    }
+    k <- max(length(From), length(To))
+    From <- rep(From, length.out=k)
+    To <- rep(To, length.out=k)
+
+    N <- numeric(k)
+    Ctrough <- numeric(k)
+    Cmin <- numeric(k)
+    Cmax <- numeric(k)
+    Cave <- numeric(k)
+    Tmax <- numeric(k)
+    Tmin <- numeric(k)
+    AUC <- numeric(k)
+    for (j in seq_len(k)) {
+        From[j] <- min(time[time >= From[j]])
+        To[j] <- max(time[time <= To[j]])
+        i <- time >= From[j] & time <= To[j]
+        N[j] <- sum(i)
+        Ctrough[j] <- dose$conc[dose$t.dose == From[j]][1]
         Cmin[j] <- min(conc[i])
         Cmax[j] <- max(conc[i])
-        Tmax[j] <- t.obs[i][which.max(conc[i])]
-        Tmin[j] <- t.obs[i][which.min(conc[i])]
+        Tmax[j] <- time[i][which.max(conc[i])]
+        Tmin[j] <- time[i][which.min(conc[i])]
         AUC.by.trapezoid <- function(x, y) {
             i <- order(x)
             x <- x[i]
             y <- y[i]
             sum(0.5 * (y[-1] + y[-length(y)]) * diff(x))
         }
-        AUC[j] <- AUC.by.trapezoid(
-            c(t.obs[i], dose$t.dose[j:min(j+1, nrow(dose))]),
-            c(conc[i], dose$conc[j:min(j+1, nrow(dose))]))
-        Cave[j] <- AUC[j]/diff(range(c(t.obs[i], dose$t.dose[j:min(j+1, nrow(dose))])))
+        AUC[j] <- AUC.by.trapezoid(time[i], conc[i])
+        Cave[j] <- AUC[j]/diff(range(time[i]))
     }
 
-    list(Ctrough = Ctrough,
-        Ttrough = Ttrough,
-        Cmax = Cmax,
-        Tmax = Tmax,
+    data.frame(
+        From = From,
+        To = To,
+        N = N,
+        Ctrough = Ctrough,
         Cmin = Cmin,
         Tmin = Tmin,
+        Cmax = Cmax,
+        Tmax = Tmax,
         Cave = Cave,
         AUC = AUC)
 }
