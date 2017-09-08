@@ -182,7 +182,7 @@ pkprofile.default <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), v
         defdose <- 1
     }
 
-    pkprofile.matrix(A, t.obs=t.obs, dose=dose, defdose=defdose, sc=sc, ...)
+    pkprofile.matrix(A, t.obs=t.obs, dose=dose, defdose=defdose, sc=sc, call=match.call(), ...)
 }
 
 #' @describeIn pkprofile Matrix method.
@@ -191,6 +191,8 @@ pkprofile.default <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), v
 pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
     dose=list(t.dose=0, amt=1, rate=0, dur=0, ii=24, addl=0, ss=0, cmt=0, lag=0, f=1),
     defdose=1, sc=1, initstate=NULL, ...) {
+
+    call <- if (!is.null(list(...)$call)) list(...)$call else match.call()
 
     if (nrow(A) < 1 | nrow(A) != ncol(A)) {
         stop("A must be a square matrix")
@@ -359,6 +361,7 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
 
     structure(conc,
         class      = c("pkprofile", class(conc)),
+        call       = call,
         t.obs      = t.obs,
         state      = state,
         finalstate = finalstate,
@@ -392,7 +395,6 @@ finalstate <- function(x) {
 #' @param x A object of class \code{\link{pkprofile}}.
 #' @return A \code{list} containing the following:
 #' \describe{
-#'   \item{\code{HTterm}}{Terminal half-life.}
 #'   \item{\code{Cmax}}{Maximum concentration over the interval between doses.}
 #'   \item{\code{Tmax}}{Time of the maximum concentration over the interval between doses.}
 #'   \item{\code{Cmin}}{Minimum concentration over the interval between doses.}
@@ -412,13 +414,6 @@ finalstate <- function(x) {
 #' with(secondary(y), points(Tmin, Cmin, pch=19, col="red"))
 #' with(secondary(y), points(Ttrough, Ctrough, pch=19, col="green"))
 #' with(secondary(y), points(Ttrough + 6, Cave, pch=19, col="purple", cex=2))
-#' 
-#' # The terminal half-life can be used to obtain the terminal slope of the
-#' # concentration-time curve on the semi-log scale:
-#' t.obs <- seq(0, 36, 0.1)
-#' y <- pkprofile(t.obs, cl=0.25, vc=5, ka=1, dose=list(t.dose=0, amt=1))
-#' plot(log2(y))
-#' abline(-2.247927, -1/secondary(y)$HLterm, col=adjustcolor("blue", 0.2), lwd=12)
 #' 
 #' @export
 secondary <- function(x) {
@@ -453,11 +448,7 @@ secondary <- function(x) {
         Cave[j] <- AUC[j]/diff(range(c(t.obs[i], dose$t.dose[j:min(j+1, nrow(dose))])))
     }
 
-    L <- attr(x, "L")
-    HLterm <- if (any(Re(L) >= 0)) Inf else log(2)/min(-Re(L))
-
-    list(HLterm = HLterm,
-        Ctrough = Ctrough,
+    list(Ctrough = Ctrough,
         Ttrough = Ttrough,
         Cmax = Cmax,
         Tmax = Tmax,
@@ -465,6 +456,55 @@ secondary <- function(x) {
         Tmin = Tmin,
         Cave = Cave,
         AUC = AUC)
+}
+
+#' Half-lives of a linear PK system.
+#' @param x A object of class \code{\link{pkprofile}}.
+#' @return A \code{numeric} vector containing the half-lives for the different
+#' phases of the system. The number of phases generally equal the number of
+#' compartments, plus one for the absorption phase if the system has first
+#' order absorption (i.e. if \code{ka} is specified). The values are returned
+#' sorted in ascending order, so the first corresponds to the alpha phase,
+#' the second beta, the third gamma, and so on. The absorption half-life, if
+#' present, comes last (it can also be identified by comparing it to the value
+#' of \code{log(2)/ka}).
+#' @examples
+#' y <- pkprofile(0, cl=0.25, vc=5, ka=1.1)
+#' halflife(y)
+#' log(2)/1.1
+#' 
+#' y <- pkprofile(0, cl=0.25, vc=5, ka=0.01)  # Flip-flop kinetics
+#' halflife(y)
+#' log(2)/0.01
+#' 
+#' # Three-compartment model
+#' y <- pkprofile(0, cl=2, vc=10, q=c(0.5, 0.3), vp=c(30, 40))
+#' halflife(y)
+#' 
+#' # The terminal half-life can be used to obtain the terminal slope of the
+#' # concentration-time curve on the semi-log scale:
+#' t.obs <- seq(0, 36, 0.1)
+#' y <- pkprofile(t.obs, cl=0.25, vc=5, ka=1, dose=list(t.dose=0, amt=1))
+#' plot(log2(y))
+#' abline(-2.247927, -1/halflife(y)[1], col=adjustcolor("blue", 0.2), lwd=12)
+#' 
+#' @export
+halflife <- function(x) {
+    L <- attr(x, "L")
+    HL <- log(2)/(-Re(L))
+    HL[HL < 0] <- Inf
+    HL <- sort(HL)
+    names(HL) <- paste0("HL.", seq_along(HL))
+    ka <- as.list(attr(x, "call"))$ka
+    if (!is.null(ka)) {
+        if (ka > 0) {
+            absorp <- which.min(abs((log(2)/ka) - HL))
+            HL <- HL[c(seq_along(HL)[-absorp], absorp)] # Put it last
+            names(HL) <- paste0("HL.", seq_along(HL))
+            names(HL)[length(HL)] <- "HL.a"
+        }
+    }
+    HL
 }
 
 #' Coerse a \code{pkprofile} to a \code{data.frame}
