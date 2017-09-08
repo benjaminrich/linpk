@@ -4,14 +4,18 @@
 \alias{secondary}
 \title{Derive secondary PK parameters.}
 \usage{
-secondary(x)
+secondary(x, include.dose.times = T)
 }
 \arguments{
 \item{x}{A object of class \code{\link{pkprofile}}.}
+
+\item{include.dose.times}{Should dose times (and end of infusion times) be
+considered in addition to the simulation times?}
 }
 \value{
 A \code{list} containing the following:
 \describe{
+  \item{\code{N}}{The number of distinct data points used to derive the quantities.}
   \item{\code{Cmax}}{Maximum concentration over the interval between doses.}
   \item{\code{Tmax}}{Time of the maximum concentration over the interval between doses.}
   \item{\code{Cmin}}{Minimum concentration over the interval between doses.}
