@@ -29,6 +29,7 @@ fluidPage(
       column(1,
         h3("Scales"),
         numericInput("timerange", "Time range (max)", value=10, min=0, step=1),
+        numericInput("ntimepoints", "Time points (N)", value=1000, min=0, step=1),
         selectInput("timeu", "Time units",
           choices=c("hours", "days", "weeks"), selected="days"),
         selectInput("doseu", "Dose units",

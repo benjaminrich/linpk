@@ -122,7 +122,7 @@ function(input, output, session) {
 
 
   sim <- reactive({
-    t.obs <- seq(0, input$timerange, length.out=1000)
+    t.obs <- seq(0, input$timerange, length.out=input$ntimepoints)
     cl    <- as.numeric(input$cl)
     vc    <- as.numeric(input$vc)
     q     <- as.numeric(c(input$q, input$q2))[seq_len(input$nperiph)]
@@ -228,7 +228,7 @@ function(input, output, session) {
   observe({
     input$toptab  # Create dependency
     args <- character(0)
-    args <- c(args, sprintf("t.obs = seq(0, %s, length.out=1000)", input$timerange))
+    args <- c(args, sprintf("t.obs = seq(0, %s, length.out=%s)", input$timerange, input$ntimepoints))
     args <- c(args, sprintf("cl = %s", input$cl))
     args <- c(args, sprintf("vc = %s", input$vc))
     if (input$nperiph == 1) {
