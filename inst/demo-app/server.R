@@ -207,12 +207,7 @@ function(input, output, session) {
 
   simtab <- reactive({
     y <- sim()
-    dose <- attr(y, "dose")
-    max.t <- max(attr(y, "t.obs"))
-    tab <- cbind(
-      data.frame(From=dose$t.dose, To=c(dose$t.dose[-1], max.t)),
-      as.data.frame(secondary(y)))
-    tab
+    as.data.frame(secondary(y))
   })
 
   output$secondary <- DT::renderDataTable(format(simtab()), options=list(dom="t"))
