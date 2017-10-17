@@ -180,11 +180,20 @@ function(input, output, session) {
       need(all(dose$f > 0), "Enter a positive number for lag bioavailable fraction")
       )
 
-    pkprofile(t.obs, cl=cl, vc=vc, q=q, vp=vp, ka=ka, dose=dose)
+    tryCatch({
+      pkprofile(t.obs, cl=cl, vc=vc, q=q, vp=vp, ka=ka, dose=dose)
+    },
+    error = function(err) {
+      err$message
+    })
   })
 
   sim.df <- reactive({
-    as.data.frame(sim())
+    y <- sim()
+    if (is.character(y)) {
+      return(y)
+    }
+    as.data.frame(y)
   })
 
   #output$plot <- renderPlot({
@@ -197,8 +206,12 @@ function(input, output, session) {
   #})
 
   output$plot <- renderDygraph({
-    validate(need(!is.null(sim.df()), "Invalid data"))
-    dygraph(sim.df(), main="PK Concentration-Time Profile") %>%
+    df <- sim.df()
+    if (is.character(df)) {
+      stop(df)
+    }
+    validate(need(!is.null(df), "Invalid data"))
+    dygraph(df, main="PK Concentration-Time Profile") %>%
       dySeries("conc", label="Model 1") %>%
       dyOptions(drawGrid=TRUE, includeZero=TRUE) %>%
       dyAxis("y", sprintf("Concentration (%s)", gsub("ug", "&mu;g", input$concu))) %>%
@@ -207,12 +220,27 @@ function(input, output, session) {
 
   simtab <- reactive({
     y <- sim()
+    if (is.character(y)) {
+      return(y)
+    }
     as.data.frame(secondary(y))
   })
 
-  output$secondary <- DT::renderDataTable(format(simtab()), options=list(dom="t"))
+  output$secondary <- DT::renderDataTable({
+    tab <- simtab()
+    if (is.character(tab)) {
+      stop(tab)
+    }
+    format(tab)
+  }, options=list(dom="t"))
 
-  output$pkprofile <- DT::renderDataTable(format(sim.df()), options=list(dom="tip"))
+  output$pkprofile <- DT::renderDataTable({
+    df <- sim.df()
+    if (is.character(df)) {
+      stop(df)
+    }
+    format(df)
+  }, options=list(dom="tip"))
 
   output$download_btn <- downloadHandler(
     filename="pkprofile.csv",

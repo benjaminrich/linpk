@@ -275,6 +275,9 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
     V <- eigenA$vector
     qrV <- qr(V)
     qrA <- qr(A)
+    if (qrV$rank < ncol(V)) {
+        stop("The solution to the system of ODE could not be found (singular matrix)")
+    }
 
     t.aug <- c(t.obs, dose$t.dose)
     evid <- c(rep(0, length(t.obs)), rep(1, nrow(dose)))
