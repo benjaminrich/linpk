@@ -122,7 +122,7 @@ function(input, output, session) {
 
 
   sim <- reactive({
-    t.obs <- seq(0, input$timerange, length.out=1000)
+    t.obs <- seq(0, input$timerange, length.out=input$ntimepoints)
     cl    <- as.numeric(input$cl)
     vc    <- as.numeric(input$vc)
     q     <- as.numeric(c(input$q, input$q2))[seq_len(input$nperiph)]
@@ -180,11 +180,20 @@ function(input, output, session) {
       need(all(dose$f > 0), "Enter a positive number for lag bioavailable fraction")
       )
 
-    pkprofile(t.obs, cl=cl, vc=vc, q=q, vp=vp, ka=ka, dose=dose)
+    tryCatch({
+      pkprofile(t.obs, cl=cl, vc=vc, q=q, vp=vp, ka=ka, dose=dose)
+    },
+    error = function(err) {
+      err$message
+    })
   })
 
   sim.df <- reactive({
-    as.data.frame(sim())
+    y <- sim()
+    if (is.character(y)) {
+      return(y)
+    }
+    as.data.frame(y)
   })
 
   #output$plot <- renderPlot({
@@ -197,8 +206,12 @@ function(input, output, session) {
   #})
 
   output$plot <- renderDygraph({
-    validate(need(!is.null(sim.df()), "Invalid data"))
-    dygraph(sim.df(), main="PK Concentration-Time Profile") %>%
+    df <- sim.df()
+    if (is.character(df)) {
+      stop(df)
+    }
+    validate(need(!is.null(df), "Invalid data"))
+    dygraph(df, main="PK Concentration-Time Profile") %>%
       dySeries("conc", label="Model 1") %>%
       dyOptions(drawGrid=TRUE, includeZero=TRUE) %>%
       dyAxis("y", sprintf("Concentration (%s)", gsub("ug", "&mu;g", input$concu))) %>%
@@ -207,17 +220,27 @@ function(input, output, session) {
 
   simtab <- reactive({
     y <- sim()
-    dose <- attr(y, "dose")
-    max.t <- max(attr(y, "t.obs"))
-    tab <- cbind(
-      data.frame(From=dose$t.dose, To=c(dose$t.dose[-1], max.t)),
-      as.data.frame(secondary(y)))
-    tab
+    if (is.character(y)) {
+      return(y)
+    }
+    as.data.frame(secondary(y))
   })
 
-  output$secondary <- DT::renderDataTable(format(simtab()), options=list(dom="t"))
+  output$secondary <- DT::renderDataTable({
+    tab <- simtab()
+    if (is.character(tab)) {
+      stop(tab)
+    }
+    format(tab)
+  }, options=list(dom="t"))
 
-  output$pkprofile <- DT::renderDataTable(format(sim.df()), options=list(dom="tip"))
+  output$pkprofile <- DT::renderDataTable({
+    df <- sim.df()
+    if (is.character(df)) {
+      stop(df)
+    }
+    format(df)
+  }, options=list(dom="tip"))
 
   output$download_btn <- downloadHandler(
     filename="pkprofile.csv",
@@ -233,7 +256,7 @@ function(input, output, session) {
   observe({
     input$toptab  # Create dependency
     args <- character(0)
-    args <- c(args, sprintf("t.obs = seq(0, %s, length.out=1000)", input$timerange))
+    args <- c(args, sprintf("t.obs = seq(0, %s, length.out=%s)", input$timerange, input$ntimepoints))
     args <- c(args, sprintf("cl = %s", input$cl))
     args <- c(args, sprintf("vc = %s", input$vc))
     if (input$nperiph == 1) {

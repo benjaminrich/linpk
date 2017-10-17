@@ -275,6 +275,9 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
     V <- eigenA$vector
     qrV <- qr(V)
     qrA <- qr(A)
+    if (qrV$rank < ncol(V)) {
+        stop("The solution to the system of ODE could not be found (singular matrix)")
+    }
 
     t.aug <- c(t.obs, dose$t.dose)
     evid <- c(rep(0, length(t.obs)), rep(1, nrow(dose)))
@@ -463,55 +466,55 @@ secondary <- function(x, From=NULL, To=NULL, include.dose.times=T) {
     time <- time[!duplicate]
     conc <- conc[!duplicate]
 
+    remove.equal <- (is.null(From) && is.null(To))
     if (is.null(From)) {
         From <- dose$t.dose
     }
     if (is.null(To)) {
         To <- c(dose$t.dose[-1], max(time))
     }
-    k <- max(length(From), length(To))
-    From <- rep(From, length.out=k)
-    To <- rep(To, length.out=k)
 
-    N <- numeric(k)
-    Ctrough <- numeric(k)
-    Cmin <- numeric(k)
-    Cmax <- numeric(k)
-    Cave <- numeric(k)
-    Tmax <- numeric(k)
-    Tmin <- numeric(k)
-    AUC <- numeric(k)
-    for (j in seq_len(k)) {
-        From[j] <- min(time[time >= From[j]])
-        To[j] <- max(time[time <= To[j]])
-        i <- time >= From[j] & time <= To[j]
-        N[j] <- sum(i)
-        Ctrough[j] <- dose$conc[dose$t.dose == From[j]][1]
-        Cmin[j] <- min(conc[i])
-        Cmax[j] <- max(conc[i])
-        Tmax[j] <- time[i][which.max(conc[i])]
-        Tmin[j] <- time[i][which.min(conc[i])]
-        AUC.by.trapezoid <- function(x, y) {
-            i <- order(x)
-            x <- x[i]
-            y <- y[i]
-            sum(0.5 * (y[-1] + y[-length(y)]) * diff(x))
-        }
-        AUC[j] <- AUC.by.trapezoid(time[i], conc[i])
-        Cave[j] <- AUC[j]/diff(range(time[i]))
+    d <- data.frame(From=From, To=To)
+    if (remove.equal) {
+        d <- subset(d, From != To)
     }
+    k <- nrow(d)
 
-    data.frame(
-        From = From,
-        To = To,
-        N = N,
-        Ctrough = Ctrough,
-        Cmin = Cmin,
-        Tmin = Tmin,
-        Cmax = Cmax,
-        Tmax = Tmax,
-        Cave = Cave,
-        AUC = AUC)
+    d$N       <- numeric(k)
+    d$Ctrough <- numeric(k)
+    d$Cmin    <- numeric(k)
+    d$Cmax    <- numeric(k)
+    d$Cave    <- numeric(k)
+    d$AUC     <- numeric(k)
+    d$Tmin    <- numeric(k)
+    d$Tmax    <- numeric(k)
+
+
+    for (j in seq_len(k)) {
+        d$From[j] <- min(time[time >= d$From[j]])
+        d$To[j] <- max(time[time <= d$To[j]])
+        i <- time >= d$From[j] & time <= d$To[j]
+        d$N[j] <- sum(i)
+        d$Ctrough[j] <- dose$conc[dose$t.dose == d$From[j]][1]
+        d$Cmin[j] <- min(conc[i])
+        d$Cmax[j] <- max(conc[i])
+        d$Tmax[j] <- time[i][which.max(conc[i])]
+        d$Tmin[j] <- time[i][which.min(conc[i])]
+        d$AUC[j] <- AUC.by.trapezoid(time[i], conc[i])
+        d$Cave[j] <- if (diff(range(time[i])) == 0) {
+            d$Cmin[j]
+        } else {
+            d$AUC[j]/diff(range(time[i]))
+        }
+    }
+    d
+}
+
+AUC.by.trapezoid <- function(x, y) {
+    i <- order(x)
+    x <- x[i]
+    y <- y[i]
+    sum(0.5 * (y[-1] + y[-length(y)]) * diff(x))
 }
 
 #' Half-lives of a linear PK system.
