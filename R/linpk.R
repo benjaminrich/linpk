@@ -182,7 +182,9 @@ pkprofile.default <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), v
         defdose <- 1
     }
 
-    pkprofile.matrix(A, t.obs=t.obs, dose=dose, defdose=defdose, sc=sc, call=match.call(), ...)
+    structure(
+        pkprofile.matrix(A, t.obs=t.obs, dose=dose, defdose=defdose, sc=sc, call=match.call(), ...),
+        pkpar=list(cl=cl, vc=vc, q=q, vp=vp, ka=ka))
 }
 
 #' @describeIn pkprofile Matrix method.
@@ -554,7 +556,7 @@ halflife <- function(x) {
     HL[HL < 0] <- Inf
     HL <- sort(HL)
     names(HL) <- paste0("HL.", seq_along(HL))
-    ka <- as.list(attr(x, "call"))$ka
+    ka <- as.list(attr(x, "pkpar"))$ka
     if (!is.null(ka)) {
         if (ka > 0) {
             absorp <- which.min(abs((log(2)/ka) - HL))
