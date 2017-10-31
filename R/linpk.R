@@ -571,13 +571,18 @@ halflife <- function(x) {
 #' Coerse a \code{pkprofile} to a \code{data.frame}
 #' @param x An object of class \code{pkprofile}.
 #' @param ... Further arguments passed along.
+#' @param col.names Character vector of length 2 giving the names for the time and concentration columns.
 #' @param .state Include the complete state along with \code{time} and \code{conc}?
-#' @return A \code{data.frame} with columns \code{time} and \code{conc}. If
-#' \code{.state == TRUE}, then the complete state is appended (as a matrix
-#' column).
+#' @return A \code{data.frame} with columns \code{time} and \code{conc} (or the
+#' names specified in \code{col.names}). If \code{.state == TRUE}, then the
+#' complete state is appended (as a matrix column).
 #' @export
-as.data.frame.pkprofile <- function(x, ..., .state=FALSE) {
+as.data.frame.pkprofile <- function(x, ..., col.names=c("time", "conc"), .state=FALSE) {
     df <- data.frame(time=attr(x, "t.obs"), conc=as.numeric(x), ...)
+    if (!is.character(col.names) | length(col.names) != 2) {
+        warning("There should be 2 column names specified, for time and concentration respectively")
+    }
+    names(df)[1:2] <- col.names
     if (.state) {
         df$state=t(attr(x, "state"))
     }
