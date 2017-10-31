@@ -4,19 +4,22 @@
 \alias{as.data.frame.pkprofile}
 \title{Coerse a \code{pkprofile} to a \code{data.frame}}
 \usage{
-\method{as.data.frame}{pkprofile}(x, ..., .state = FALSE)
+\method{as.data.frame}{pkprofile}(x, ..., col.names = c("time", "conc"),
+  .state = FALSE)
 }
 \arguments{
 \item{x}{An object of class \code{pkprofile}.}
 
 \item{...}{Further arguments passed along.}
 
+\item{col.names}{Character vector of length 2 giving the names for the time and concentration columns.}
+
 \item{.state}{Include the complete state along with \code{time} and \code{conc}?}
 }
 \value{
-A \code{data.frame} with columns \code{time} and \code{conc}. If
-\code{.state == TRUE}, then the complete state is appended (as a matrix
-column).
+A \code{data.frame} with columns \code{time} and \code{conc} (or the
+names specified in \code{col.names}). If \code{.state == TRUE}, then the
+complete state is appended (as a matrix column).
 }
 \description{
 Coerse a \code{pkprofile} to a \code{data.frame}
