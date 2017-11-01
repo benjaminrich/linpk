@@ -666,3 +666,70 @@ points.pkprofile <- function(x, y, ...) {
         do.call(points.default, args)
     }
 }
+
+#' Construct a symmetric matrix from its lower triangle.
+#' @param LT A numeric vector giving the elements of the lower triangle of the
+#' matrix by row (see examples).
+#' @return A symmetric matrix.
+#' @examples
+#' LTmat(1:6)
+#' @export
+LTmat <- function(LT) {
+    x <- length(LT)
+    p <- (sqrt(8*x + 1) - 1)/2
+    m <- matrix(0, p, p)
+    m[upper.tri(m, diag=T)] <- LT
+    m + t(m) - diag(diag(m))
+}
+
+#' Construct a block-diagonal matrix.
+#' @param ... Any number of square matrices making up the diagonal blocks of
+#' the matrix.
+#' @return A block-diagonal matrix.
+#' @examples
+#' blockdiag(matrix(1, 2, 2), 2, matrix(3, 4, 4))
+#' @export
+blockdiag <- function(...) {
+    b <- list(...)
+    b <- lapply(b, function(x) {
+        if (is.numeric(x) && length(x) == 1) {
+            x <- as.matrix(x)
+        }
+        if (!is.matrix(x) || nrow(x) != ncol(x)) {
+            stop("All arguments must be square matrices")
+        }
+        x
+    })
+    n <- sapply(b, nrow)
+    cn <- c(0, cumsum(n))
+    ntot <- sum(n)
+    m <- matrix(0, ntot, ntot)
+    for (j in seq_along(n)) {
+        i <- (1:n[j]) + cn[j]
+        m[i,i] <- b[[j]]
+    }
+    m
+}
+
+#' Generate individual random effects from a multivariate normal distribution
+#' @param n The number of individuals.
+#' @param omegaLT A numberic vector giving the elements of the lower triangle
+#' of the covariance matrix by row.
+#' @param omega The covariance matrix.
+#' @param eta.names A character vector of names for each random effect.
+#' @return An \eqn{n \times p} matrix, where each row contains the vector of random
+#' effects for one individual (\eqn{p} is the size of the covariance matrix).
+#' @seealso
+#' \code{\link{LTmat}}
+#' \code{\link{blockdiag}}
+#' @examples
+#' omegaLT <- c(0.123, 0.045, 0.678)
+#' generateETA(10, omegaLT)
+#' @export
+generateETA <- function(n, omegaLT, omega=LTmat(omegaLT), eta.names=sprintf("ETA%d", 1:nrow(omega))) {
+    x <- mvtnorm::rmvnorm(n, rep(0, nrow(omega)), omega)
+    colnames(x) <- eta.names
+    x
+}
+
+
