@@ -11,7 +11,7 @@ Description: Generate concentration-time profiles from linear pharmacokinetic
   (derived) PK paramters (e.g. Cmax, Ctrough, AUC, Tmax, half-life, etc.) are
   computed.
 License: GPL-2
-Imports: graphics,utils
+Imports: graphics,utils,mvtnorm
 Suggests: knitr
 VignetteBuilder: knitr
 RoxygenNote: 5.0.1
