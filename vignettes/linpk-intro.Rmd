@@ -1,12 +1,12 @@
 ---
-title: "Simulating Pharmacokinetic Concentration-Time Profiles With the `linkp` Package"
+title: "Simulating Pharmacokinetic Concentration-Time Profiles With the `linpk` Package"
 author: "Benjamin Rich"
 date: "`r Sys.Date()`"
 output: 
   rmarkdown::html_vignette:
     css: vignette.css
 vignette: >
-  %\VignetteIndexEntry{Simulating Pharmacokinetic Concentration-Time Profiles With the linkp Package}
+  %\VignetteIndexEntry{Simulating Pharmacokinetic Concentration-Time Profiles With the linpk Package}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -29,6 +29,7 @@ Monolix](http://mlxtran.lixoft.com/wp-content/uploads/sites/2/2016/02/PKPDlibrar
 software by Bertrand and Mentr&eacute;).
 
 Each formula is specific with regard to:
+
 - Dosing type: bolus, infusion (zero-order), absorption (first-order)
 - Number of doses: single, multiple, at steady state
 - Number of compartments: 1, 2, 3, ...
@@ -273,4 +274,13 @@ y <- pkprofile(t.obs, cl=0.8, vc=6, q=0.09, vp=4.5, ka=1.3, dose=doses)
 plot(y, col="blue", main="150 mg IV at time zero, 10 mg SC QD on days 8 to 20", xlab="Time (days)")
 ```
 
+## Limitations
+
+Compared to more general ODE solvers ([mrgsolve](http://mrgsolve.github.io/),
+[PKPDsim](http://pkpdsim.ronkeizer.com/),
+[RxODE](https://github.com/nlmixrdevelopment/RxODE), this package has some
+limitations, the most obvious being that it can only simulate from *linear* PK
+models. This means that it cannot be used to simulate from most PD models, for
+instance. Another limitation is that parameters must be fixed value, they
+cannot change over time.
 
