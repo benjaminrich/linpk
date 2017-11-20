@@ -278,7 +278,7 @@ plot(y, col="blue", main="150 mg IV at time zero, 10 mg SC QD on days 8 to 20", 
 
 Compared to more general ODE solvers ([mrgsolve](http://mrgsolve.github.io/),
 [PKPDsim](http://pkpdsim.ronkeizer.com/),
-[RxODE](https://github.com/nlmixrdevelopment/RxODE), this package has some
+[RxODE](https://github.com/nlmixrdevelopment/RxODE)), this package has some
 limitations, the most obvious being that it can only simulate from *linear* PK
 models. This means that it cannot be used to simulate from most PD models, for
 instance. Another limitation is that parameters must be fixed value, they

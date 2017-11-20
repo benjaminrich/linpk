@@ -682,6 +682,18 @@ LTmat <- function(LT) {
     m + t(m) - diag(diag(m))
 }
 
+#' Convert from standard deviation and correlation matrix to covariance matrix.
+#' @param cor A correlation matrix.
+#' @param sd A vector of standard deviations.
+#' @return A covariance matrix.
+#' @examples
+#' cor2cov(matrix(c(1, 0.5, 0.5, 1), 2, 2), 0.1)
+#' @export
+cor2cov <- function(cor, sd) {
+    n <- nrow(cor)
+    diag(sd, n) %*% cor %*% diag(sd, n)
+}
+
 #' Construct a block-diagonal matrix.
 #' @param ... Any number of square matrices making up the diagonal blocks of
 #' the matrix.
