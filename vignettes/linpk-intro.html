@@ -4,7 +4,7 @@
 
 <head>
 
-<meta charset="utf-8">
+<meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 
@@ -12,7 +12,7 @@
 
 <meta name="author" content="Benjamin Rich" />
 
-<meta name="date" content="2017-11-03" />
+<meta name="date" content="2018-03-06" />
 
 <title>Simulating Pharmacokinetic Concentration-Time Profiles With the linpk Package</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Simulating Pharmacokinetic Concentration-Time Profiles With the <code>linpk</code> Package</h1>
 <h4 class="author"><em>Benjamin Rich</em></h4>
-<h4 class="date"><em>2017-11-03</em></h4>
+<h4 class="date"><em>2018-03-06</em></h4>
 
 
 
@@ -174,12 +174,21 @@ y2 &lt;-<span class="st"> </span><span class="kw">pkprofile</span>(t.obs, <span 
 </div>
 <div id="secondary-parameters" class="section level2">
 <h2>Secondary parameters</h2>
+<div id="half-lives" class="section level3">
+<h3>Half-lives</h3>
 <p><code>linpk</code> makes it quite easy to access some secondary parameters from the PK model and simulation. The half-lives of the model can be obtained directly using the <code>halflife()</code> function. For instance for the 3-compartment model with first-order absorption in the previous section:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">y &lt;-<span class="st"> </span><span class="kw">pkprofile</span>(t.obs, <span class="dt">cl=</span><span class="fl">0.5</span>, <span class="dt">vc=</span><span class="dv">11</span>, <span class="dt">q=</span><span class="kw">c</span>(<span class="dv">2</span>, <span class="fl">0.3</span>), <span class="dt">vp=</span><span class="kw">c</span>(<span class="dv">30</span>, <span class="dv">3</span>), <span class="dt">ka=</span><span class="fl">1.3</span>, <span class="dt">dose=</span><span class="kw">list</span>(<span class="dt">amt=</span><span class="dv">100</span>))
 <span class="kw">halflife</span>(y)</code></pre></div>
 <pre><code>##       HL.1       HL.2       HL.3       HL.a 
 ##  2.1946882  7.2720612 68.8588820  0.5331901</code></pre>
 <p>There are 4 components: the <span class="math inline">\(\alpha\)</span>, <span class="math inline">\(\beta\)</span> and <span class="math inline">\(\gamma\)</span> half-lives, as well as the absorption half-life.</p>
+<p>Note that computing the half-life doesn’t require any doses or sampling. For example, this 2-compartment model:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">halflife</span>(<span class="kw">pkprofile</span>(<span class="dt">cl=</span><span class="fl">0.5</span>, <span class="dt">vc=</span><span class="dv">11</span>, <span class="dt">q=</span><span class="dv">2</span>, <span class="dt">vp=</span><span class="dv">30</span>))</code></pre></div>
+<pre><code>##      HL.1      HL.2 
+##  2.447202 64.788075</code></pre>
+</div>
+<div id="other-secondary-parameters-cmin-cmax-auc" class="section level3">
+<h3>Other secondary parameters (Cmin, Cmax, AUC, …)</h3>
 <p>Other secondary parameters are accessed using the <code>secondary()</code> function:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">secondary</span>(y)</code></pre></div>
 <pre><code>##   From To   N       Ctrough          Cmin     Cmax     Cave      AUC Tmin Tmax
@@ -203,6 +212,7 @@ y &lt;-<span class="st"> </span><span class="kw">pkprofile</span>(t.obs, <span c
 ## 2    0  48 481 -2.260818e-15 -2.260818e-15  7.771659 3.303409 158.56361    0 25.7
 ## 3   48 120 721  2.592773e+00  2.592773e+00 10.396262 5.650046 406.80331   48 97.6</code></pre>
 </div>
+</div>
 <div id="combining-iv-infusion-with-first-order-absorption" class="section level2">
 <h2>Combining IV infusion with first-order absorption</h2>
 <p>As a last example, let us consider a slightly more complex scenario in which we simulate an 150 mg IV dose at time zero, followed by daily subcutaneous 10 mg doses (first-order absorption) on days 8 to 20 (here we will assume that the unit of time is days so clearance is in L/day). To do so, it is necessary to know that we can specify the compartment that a particular dose is administered to using the <code>cmt</code> element of the dosing list argument. The central compartment is always associated with the number 1, while specifying <code>cmt=0</code> indicates that the dose goes to the default dosing compartment, which is the depot compartment in the presence of <code>ka</code> (first-order absorption), and the central compartment otherwise. For no particular reason other than to illustrate that it can be done, we will also specify the dose list as an external <code>data.frame</code>:</p>
@@ -218,7 +228,7 @@ doses</code></pre></div>
 </div>
 <div id="limitations" class="section level2">
 <h2>Limitations</h2>
-<p>Compared to more general ODE solvers (<a href="http://mrgsolve.github.io/">mrgsolve</a>, <a href="http://pkpdsim.ronkeizer.com/">PKPDsim</a>, <a href="https://github.com/nlmixrdevelopment/RxODE">RxODE</a>, this package has some limitations, the most obvious being that it can only simulate from <em>linear</em> PK models. This means that it cannot be used to simulate from most PD models, for instance. Another limitation is that parameters must be fixed value, they cannot change over time.</p>
+<p>Compared to more general ODE solvers (<a href="http://mrgsolve.github.io/">mrgsolve</a>, <a href="http://pkpdsim.ronkeizer.com/">PKPDsim</a>, <a href="https://github.com/nlmixrdevelopment/RxODE">RxODE</a>), this package has some limitations, the most obvious being that it can only simulate from <em>linear</em> PK models. This means that it cannot be used to simulate from most PD models, for instance. Another limitation is that parameters must be fixed value, they cannot change over time.</p>
 </div>
 
 
@@ -228,7 +238,7 @@ doses</code></pre></div>
   (function () {
     var script = document.createElement("script");
     script.type = "text/javascript";
-    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
     document.getElementsByTagName("head")[0].appendChild(script);
   })();
 </script>

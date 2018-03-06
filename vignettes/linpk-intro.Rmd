@@ -212,6 +212,8 @@ legend("topright", c("2-Compartment", "3-Compartment"), col=c("black", "green3")
 
 ## Secondary parameters
 
+### Half-lives
+
 `linpk` makes it quite easy to access some secondary parameters from the PK
 model and simulation. The half-lives of the model can be obtained directly
 using the `halflife()` function. For instance for the 3-compartment model with
@@ -224,6 +226,14 @@ halflife(y)
 
 There are 4 components: the $\alpha$, $\beta$ and $\gamma$ half-lives, as well
 as the absorption half-life.
+
+Note that computing the half-life doesn't require any doses or sampling. For example, this 2-compartment model:
+
+```{r}
+halflife(pkprofile(cl=0.5, vc=11, q=2, vp=30))
+```
+
+### Other secondary parameters (Cmin, Cmax, AUC, ...)
 
 Other secondary parameters are accessed using the `secondary()` function:
 
