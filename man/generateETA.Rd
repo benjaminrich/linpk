@@ -32,4 +32,3 @@ generateETA(10, omegaLT)
 \code{\link{LTmat}}
 \code{\link{blockdiag}}
 }
-

@@ -43,4 +43,3 @@ plot(log2(y))
 abline(-2.247927, -1/halflife(y)[1], col=adjustcolor("blue", 0.2), lwd=12)
 
 }
-

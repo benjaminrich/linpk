@@ -26,4 +26,6 @@ y2 <- pkprofile(t.obs, cl=0.25, vc=5, ka=1, dose=list(t.dose=0, amt=1), initstat
 plot(y, xlim=c(0, 24), ylim=c(0, max(y2)), col="blue")  # First dose
 lines(t.obs+12, y2, col="red")                          # Second dose
 }
-
+\seealso{
+\code{\link{pkprofile.pkprofile}}
+}

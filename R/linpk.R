@@ -5,7 +5,7 @@
 #' zero-order infusion, possibly with one or more peripheral compartments, and
 #' possibly under steady-state conditions. Single or multiple doses may be
 #' specified.
-
+#'
 #' @param t.obs A numeric vector of times at which to observe concentrations.
 #' @param cl Central clearance parameter.
 #' @param vc Central volume parameter.
@@ -34,7 +34,7 @@
 #'   compartment for first-order absorption (i.e. \code{ka > 0}), and central
 #'   compartment otherwise.}
 #'   \item{\code{lag}}{Time lag (default 0).}
-#'   \item{\code{f}}{Bioavailable fraction (default 0).}
+#'   \item{\code{f}}{Bioavailable fraction (default 1).}
 #' }
 #' @param sc A scaling constant for the central compartment. Concentrations are
 #' obtained by dividing amounts by this constant.
@@ -45,28 +45,15 @@
 #' compartments.
 #' @param ... Further arguments passed along to other methods.
 #' @return An object of class "pkprofile", which simply a numeric vector of
-#' concentration values with some attributes attached to it. These include:
-#' \describe{
-#'   \item{\code{t.obs}}{Numeric vector of concentration times.}
-#'   \item{\code{t.dose}}{Numeric vecotr of dose time.}
-#'   \item{\code{secondary}}{A list of derived secondary PK parameters. This includes:
-#'     \describe{
-#'       \item{\code{HLterm}}{Terminal half-life.}
-#'       \item{\code{Ctrough}}{Concentration value at the time the dose was
-#'       given (assuming this time is one of those in \code{t.obs}, otherwise
-#'       at the most recent previous observation time}.
-#'       \item{\code{Cmin}}{The minimum concentration observed in the time
-#'       interval between two consecutive doses.}
-#'       \item{\code{Cmax}}{The minimum concentration observed in the time
-#'       interval between two consecutive doses.}
-#'       \item{\code{AUC}}{The area under the concentration-time curve in the time
-#'       interval between two consecutive doses, calcuated by the trapezoid rule.}
-#'     \code{Ctrough}, \code{Cmin}, \code{Cmax} and \code{AUC} are vectors of
-#'     length \code{j - 1} where \code{j} is the number of doses given. It is
-#'     recommended that \code{t.obs} be a superset of \code{t.dose}.}
-#'   }
-#' }
+#' concentration values with some attributes attached to it.
 #' This object has its own methods for \code{print}, \code{plot}, \code{lines} and \code{points}.
+#' @seealso
+#' \code{\link{halflife}}
+#' \code{\link{secondary}}
+#' \code{\link{print.pkprofile}}
+#' \code{\link{plot.pkprofile}}
+#' \code{\link{lines.pkprofile}}
+#' \code{\link{points.pkprofile}}
 #' @examples
 #' # Default values, a bolus injection
 #' y <- pkprofile()
@@ -137,9 +124,83 @@
 pkprofile <- function(...) UseMethod("pkprofile")
 
 
+#' Continue an existing concentration-time profile.
+#'
+#' This method can be used to append to an existing PK profile, for instance to
+#' simulate a PK profile with parameters that change over time. Each time the
+#' parameters change, a new call to this method is used to advance the system
+#' with the new parameter values.
+#'
+#' @param obj An object returned from a previous call to \code{\link{pkprofile}}.
+#' @param ... Further arguments passed along.
+#' @param append Should the new profile be appended to the current samples?
+#' Otherwise, only the new samples are returned.
+#' @return An object of class "pkprofile".
+#' @section Warning:
+#' The new parameters take effect at the time when the previous profile ends.
+#' If the previous profile ends before the new sampling starts, the <i>new</i>
+#' parameters will be used to advance the system to the start of the new
+#' sampling.
+#' @seealso
+#' \code{\link{pkprofile}}
+#' @examples
+#' t.obs <- seq(0, 24, 0.1)
+#' amt <- 1
+#' ka <- 1
+#' cl <- 0.25
+#' vc <- 5
+#' 
+#' # One-compartment model with first-order absorption
+#' # First dose at time 0
+#' y <- pkprofile(t.obs=t.obs, cl=cl, vc=vc, ka=ka, dose=list(t.dose=0, amt=amt))
+#' 
+#' # Second dose at 24h with a lower clearance
+#' y <- pkprofile(y, t.obs=t.obs+24, cl=0.5*cl, vc=vc, ka=ka, dose=list(t.dose=24, amt=amt))
+#' 
+#' # Third dose at 48h with a higher clearance
+#' y <- pkprofile(y, t.obs=t.obs+48, cl=2*cl, vc=vc, ka=ka, dose=list(t.dose=48, amt=amt))
+#' plot(y)
+#' 
+#' @export
+#' @importFrom utils tail
+pkprofile.pkprofile <- function(obj, ..., append=TRUE) {
+    args <- list(...)
+
+    if (is.null(args$t.obs)) {
+        stop("No t.obs provided")
+    }
+    if (is.null(args$dose)) {
+        stop("No dose provided")
+    }
+    if (is.null(args$dose$t.dose)) {
+        stop("No t.dose provided")
+    }
+
+    t.last <- tail(attr(obj, "t.obs"), 1)
+
+    newargs <- args
+    newargs$t.obs <- (args$t.obs - t.last)
+    newargs$dose$t.dose <- (args$dose$t.dose - t.last)
+    newargs$initstate <- as.numeric(attr(obj, "finalstate"))
+
+    obj2 <- do.call(pkprofile, newargs)
+    attr(obj2, "t.obs") <- attr(obj2, "t.obs") + t.last
+    attr(obj2, "dose")$t.dose <- attr(obj2, "dose")$t.dose + t.last
+
+    if (append) {
+        obj3 <- c(obj, obj2)
+        attributes(obj3) <- attributes(obj2)
+        attr(obj3, "t.obs") <- c(attr(obj, "t.obs"), attr(obj2, "t.obs"))
+        attr(obj3, "dose") <- rbind(attr(obj, "dose"), attr(obj2, "dose"))
+        attr(obj3, "state") <- cbind(attr(obj, "state"), attr(obj2, "state"))
+        obj3
+    } else {
+        obj2
+    }
+}
+
 #' @describeIn pkprofile Default method.
 #' @export
-#' @importFrom utils head tail
 pkprofile.default <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeric(0), ka=0,
     dose=list(t.dose=0, amt=1, rate=0, dur=0, ii=24, addl=0, ss=0, cmt=0, lag=0, f=1),
     sc=vc, ...) {
@@ -189,7 +250,6 @@ pkprofile.default <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), v
 
 #' @describeIn pkprofile Matrix method.
 #' @export
-#' @importFrom utils head tail
 pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
     dose=list(t.dose=0, amt=1, rate=0, dur=0, ii=24, addl=0, ss=0, cmt=0, lag=0, f=1),
     defdose=1, sc=1, initstate=NULL, ...) {
@@ -392,6 +452,8 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
 #' @param x A object of class \code{\link{pkprofile}}.
 #' @return A \code{numeric} vector containing the state of each compartment at
 #' the final observation time.
+#' @seealso
+#' \code{\link{pkprofile.pkprofile}}
 #' @examples
 #' # Administer a dose at time 0 and a second dose using the final state
 #' # from the first dose (at 12h) as the initial state for the second dose.
@@ -517,6 +579,11 @@ AUC.by.trapezoid <- function(x, y) {
     x <- x[i]
     y <- y[i]
     sum(0.5 * (y[-1] + y[-length(y)]) * diff(x))
+}
+
+Tmax.oral1cpt <- function(cl, vc, ka) {
+    ke <- cl/vc
+    log(ka/ke)/(ka - ke)
 }
 
 #' Half-lives of a linear PK system.

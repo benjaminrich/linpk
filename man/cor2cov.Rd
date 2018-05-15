@@ -20,4 +20,3 @@ Convert from standard deviation and correlation matrix to covariance matrix.
 \examples{
 cor2cov(matrix(c(1, 0.5, 0.5, 1), 2, 2), 0.1)
 }
-
