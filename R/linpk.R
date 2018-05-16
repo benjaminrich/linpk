@@ -163,26 +163,32 @@ pkprofile <- function(...) UseMethod("pkprofile")
 #' plot(y)
 #' 
 #' @export
-#' @importFrom utils tail
-pkprofile.pkprofile <- function(obj, t.obs, ..., append=TRUE) {
+pkprofile.pkprofile <- function(obj, t.obs=finaltime(obj) + seq(0, 24, 0.1), ..., append=TRUE) {
     args <- list(...)
 
-    t.last <- tail(attr(obj, "t.obs"), 1)
+    t.last <- finaltime(obj)
 
     newargs <- args
     newargs$t.obs <- (t.obs - t.last)
-    newargs$initstate <- as.numeric(attr(obj, "finalstate"))
+    newargs$initstate <- finalstate(obj)
 
     if (!is.null(args$dose)) {
+        if (!is.list(args$dose)) {
+            stop("dose must be given as a list or data.frame")
+        }
+        args$dose <- as.data.frame(args$dose)
         if (!is.null(args$dose$t.dose)) {
             newargs$dose$t.dose <- (args$dose$t.dose - t.last)
         } else {
             warning("No t.dose provided. Assuming last time point of obj.")
-            newargs$dose$t.dose <- rep(0, length=nrow(args$dose))
+            newargs$dose$t.dose <- rep(0, length.out=nrow(args$dose))
         }
         if (any(newargs$dose$t.dose < 0)) {
             warning("Doses before the end of the previous profile. Expect strange behavior.")
         }
+    } else {
+        # Zero dose to avoid warning
+        newargs$dose <- data.frame(t.dose=0, amt=0)
     }
 
     if (any(newargs$t.obs < 0)) {
@@ -276,9 +282,13 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
     }
     dose <- as.data.frame(dose)
     if (nrow(dose) == 0) {
-        stop("No dose given")
+        warning("No dose given")
+        dose <- data.frame(t.dose=0, amt=0)
     }
 
+    if (!is.null(dose$amt) && any(dose$addl < 0)) {
+        warning("Negative amt. Expect strange behavior.")
+    }
     if (!is.null(dose$addl) && any(dose$addl > 0) && is.null(dose$ii)) {
         stop("addl requires that ii be specified")
     }
@@ -441,7 +451,6 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
     }
 
     state <- Re(y[, evid==0, drop=FALSE])
-    finalstate <- state[, ncol(state), drop=FALSE]
     conc <- state[1,]/sc[1]
 
     # Keep track of the concentration at time of dose (Ctrough), and EOI
@@ -457,7 +466,6 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
         call       = call,
         t.obs      = t.obs,
         state      = state,
-        finalstate = finalstate,
         dose       = dose,
         defdose    = defdose,
         sc         = sc,
@@ -481,9 +489,19 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
 #' y2 <- pkprofile(t.obs, cl=0.25, vc=5, ka=1, dose=list(t.dose=0, amt=1), initstate=finalstate(y))
 #' plot(y, xlim=c(0, 24), ylim=c(0, max(y2)), col="blue")  # First dose
 #' lines(t.obs+12, y2, col="red")                          # Second dose
+#' abline(v=finaltime(y), col="gray75", lty=2)
 #' @export
 finalstate <- function(x) {
-    as.numeric(attr(x, "finalstate"))
+    state <- attr(x, "state")
+    finalstate <- state[, ncol(state), drop=FALSE]
+    as.numeric(finalstate)
+}
+
+#' @describeIn finalstate Get the final observation time.
+#' @export
+finaltime <- function(x) {
+    t.obs <- attr(x, "t.obs")
+    t.obs[length(t.obs)]
 }
 
 #' Get the doses from a PK profile.

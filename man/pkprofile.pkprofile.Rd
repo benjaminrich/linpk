@@ -4,7 +4,8 @@
 \alias{pkprofile.pkprofile}
 \title{Continue an existing concentration-time profile.}
 \usage{
-\method{pkprofile}{pkprofile}(obj, t.obs, ..., append = TRUE)
+\method{pkprofile}{pkprofile}(obj, t.obs = finaltime(obj) + seq(0, 24, 0.1),
+  ..., append = TRUE)
 }
 \arguments{
 \item{obj}{An object returned from a previous call to \code{\link{pkprofile}}.}
