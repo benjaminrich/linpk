@@ -117,8 +117,9 @@ absorption is required. Note that if both `dur` (or `rate`) and `ka` are
 specified, then the function will deduce that the dose is infused into the
 depot compartment.
 
-An oral dose may have an associated time `lag` and bioavailability (`f`). These
-parameters can be added to the dose list argument as necessary:
+A dose may have an associated time `lag` and bioavailability (`f`) (note that
+`lag` and `f` are associated to a *dose*, not to a *compartment* as in NONMEM).
+These parameters can be added to the dose list argument as necessary:
 
 ```{r}
 y <- pkprofile(t.obs, cl=0.5, vc=11, ka=1.3, dose=list(amt=100, lag=0.4, f=0.6))
@@ -136,10 +137,22 @@ plot(y)
 ```
 
 In this example, we have simulated two doses, one given at time zero, and the
-second at 12 hours. We can also specify different amounts for each dose:
+second at 12 hours. Note that vector *recycling* has been applied to `amt` to
+match the number of doses (this is generally true for items in the dose list;
+shorter items are recycled to match the longest item in the list). We can also
+specify different amounts for each dose:
 
 ```{r}
 y <- pkprofile(t.obs, cl=0.5, vc=11, ka=1.3, dose=list(t.dose=c(0, 12), amt=c(100, 50)))
+plot(y)
+```
+
+It is also possible to use a `data.frame` (which is a type of list) to specify doses:
+
+```{r}
+doses <- data.frame(t.dose=c(0, 12), amt=c(100, 50))
+doses
+y <- pkprofile(t.obs, cl=0.5, vc=11, ka=1.3, dose=doses)
 plot(y)
 ```
 
@@ -172,15 +185,12 @@ y <- pkprofile(t.obs, cl=0.5, vc=11, ka=1.3,
 plot(y)
 ```
 
-Doses can also be specified in a `data.frame`:
+A `data.frame` with all the realized doses can also obtained using the
+`dose.frame` function:
 
 ```{r}
-doses <- data.frame(t.dose=c(0, 24*2 + 14), amt=c(100, 50), addl=c(4, 0), ii=24)
-doses
-y <- pkprofile(t.obs, cl=0.5, vc=11, ka=1.3, dose=doses)
-plot(y)
+dose.frame(y)
 ```
-
 
 ## Doses at steady state
 
@@ -274,17 +284,16 @@ secondary(y, From=c(0, 0, 48), To=c(12, 48, 128))
 
 ## Combining IV infusion with first-order absorption
 
-As a last example, let us consider a slightly more complex scenario in which we
-simulate an 150 mg IV dose at time zero, followed by daily subcutaneous 10 mg
-doses (first-order absorption) on days 8 to 20 (here we will assume that the
-unit of time is days so clearance is in L/day). To do so, it is necessary to
-know that we can specify the compartment that a particular dose is administered
+It is possible to specify the compartment that a particular dose is administered
 to using the `cmt` element of the dosing list argument. The central compartment
 is always associated with the number 1, while specifying `cmt=0` indicates that
 the dose goes to the default dosing compartment, which is the depot compartment
 in the presence of `ka` (first-order absorption), and the central compartment
-otherwise. For no particular reason other than to illustrate that it can be
-done, we will also specify the dose list as an external `data.frame`:
+otherwise. This feature is used in the following example to simulate a scenario
+in which a 150 mg IV dose is administered at time zero, followed by daily
+subcutaneous 10 mg doses (first-order absorption) on days 8 to 20 (here we will
+assume that the unit of time is days so clearance is in L/day). In this example,
+we specify the dose list as an external `data.frame`:
 
 ```{r}
 t.obs <- seq(0, 20, 0.1)
@@ -292,6 +301,29 @@ doses <- data.frame(t.dose=c(0, 7), amt=c(150, 10), addl=c(0, 12), ii=1, cmt=c(1
 doses
 y <- pkprofile(t.obs, cl=0.8, vc=6, q=0.09, vp=4.5, ka=1.3, dose=doses)
 plot(y, col="blue", main="150 mg IV at time zero, 10 mg SC QD on days 8 to 20", xlab="Time (days)")
+```
+
+## Time-varying parameters
+
+Time-varying parameters are not handled directly. Systems with parameters that
+vary continuously over time are not linear and hence outside the scope of
+`linpk`. However, if parameters change at a discrete set of time points, and the
+system is linear between those time points, it is possible to advance the system
+in discrete steps. To do so, we can use the object returned by `pkprofile` as
+the first argument in a subsequent call in order to append to the existing
+profile. For example, the following simulates a scenario with daily oral dosing
+where clearance increases by 20% each day:
+
+```{r}
+t.grid <- seq(0, 24, 0.1)
+t.dose <- seq(0, by=24, len=8)
+cl0 <- 0.1; cl <- cl0; ka <- 0.5; vc <- 10
+y <- pkprofile(t.obs=t.grid, cl=cl, vc=vc, ka=ka, dose=list(t.dose=0))
+for (day in 2:8) {
+    cl <- 1.2*cl
+    y <- pkprofile(y, t.obs=t.grid + t.dose[day], cl=cl, vc=vc, ka=ka, dose=list(t.dose=t.dose[day]))
+}
+plot(y, main="Clearance increasing by 20% each day")
 ```
 
 ## Limitations

@@ -4,10 +4,12 @@
 \alias{pkprofile.pkprofile}
 \title{Continue an existing concentration-time profile.}
 \usage{
-\method{pkprofile}{pkprofile}(obj, ..., append = TRUE)
+\method{pkprofile}{pkprofile}(obj, t.obs, ..., append = TRUE)
 }
 \arguments{
 \item{obj}{An object returned from a previous call to \code{\link{pkprofile}}.}
+
+\item{t.obs}{A numeric vector of times at which to observe concentrations.}
 
 \item{...}{Further arguments passed along.}
 
@@ -26,7 +28,7 @@ with the new parameter values.
 \section{Warning}{
 
 The new parameters take effect at the time when the previous profile ends.
-If the previous profile ends before the new sampling starts, the <i>new</i>
+If the previous profile ends before the new sampling starts, the \emph{new}
 parameters will be used to advance the system to the start of the new
 sampling.
 }
@@ -40,13 +42,13 @@ vc <- 5
 
 # One-compartment model with first-order absorption
 # First dose at time 0
-y <- pkprofile(t.obs=t.obs, cl=cl, vc=vc, ka=ka, dose=list(t.dose=0, amt=amt))
+y <- pkprofile(t.obs, cl=cl, vc=vc, ka=ka, dose=list(t.dose=0, amt=amt))
 
 # Second dose at 24h with a lower clearance
-y <- pkprofile(y, t.obs=t.obs+24, cl=0.5*cl, vc=vc, ka=ka, dose=list(t.dose=24, amt=amt))
+y <- pkprofile(y, t.obs+24, cl=0.5*cl, vc=vc, ka=ka, dose=list(t.dose=24, amt=amt))
 
 # Third dose at 48h with a higher clearance
-y <- pkprofile(y, t.obs=t.obs+48, cl=2*cl, vc=vc, ka=ka, dose=list(t.dose=48, amt=amt))
+y <- pkprofile(y, t.obs+48, cl=2*cl, vc=vc, ka=ka, dose=list(t.dose=48, amt=amt))
 plot(y)
 
 }

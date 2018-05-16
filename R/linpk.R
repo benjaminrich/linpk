@@ -132,13 +132,14 @@ pkprofile <- function(...) UseMethod("pkprofile")
 #' with the new parameter values.
 #'
 #' @param obj An object returned from a previous call to \code{\link{pkprofile}}.
+#' @param t.obs A numeric vector of times at which to observe concentrations.
 #' @param ... Further arguments passed along.
 #' @param append Should the new profile be appended to the current samples?
 #' Otherwise, only the new samples are returned.
 #' @return An object of class "pkprofile".
 #' @section Warning:
 #' The new parameters take effect at the time when the previous profile ends.
-#' If the previous profile ends before the new sampling starts, the <i>new</i>
+#' If the previous profile ends before the new sampling starts, the \emph{new}
 #' parameters will be used to advance the system to the start of the new
 #' sampling.
 #' @seealso
@@ -152,36 +153,41 @@ pkprofile <- function(...) UseMethod("pkprofile")
 #' 
 #' # One-compartment model with first-order absorption
 #' # First dose at time 0
-#' y <- pkprofile(t.obs=t.obs, cl=cl, vc=vc, ka=ka, dose=list(t.dose=0, amt=amt))
+#' y <- pkprofile(t.obs, cl=cl, vc=vc, ka=ka, dose=list(t.dose=0, amt=amt))
 #' 
 #' # Second dose at 24h with a lower clearance
-#' y <- pkprofile(y, t.obs=t.obs+24, cl=0.5*cl, vc=vc, ka=ka, dose=list(t.dose=24, amt=amt))
+#' y <- pkprofile(y, t.obs+24, cl=0.5*cl, vc=vc, ka=ka, dose=list(t.dose=24, amt=amt))
 #' 
 #' # Third dose at 48h with a higher clearance
-#' y <- pkprofile(y, t.obs=t.obs+48, cl=2*cl, vc=vc, ka=ka, dose=list(t.dose=48, amt=amt))
+#' y <- pkprofile(y, t.obs+48, cl=2*cl, vc=vc, ka=ka, dose=list(t.dose=48, amt=amt))
 #' plot(y)
 #' 
 #' @export
 #' @importFrom utils tail
-pkprofile.pkprofile <- function(obj, ..., append=TRUE) {
+pkprofile.pkprofile <- function(obj, t.obs, ..., append=TRUE) {
     args <- list(...)
-
-    if (is.null(args$t.obs)) {
-        stop("No t.obs provided")
-    }
-    if (is.null(args$dose)) {
-        stop("No dose provided")
-    }
-    if (is.null(args$dose$t.dose)) {
-        stop("No t.dose provided")
-    }
 
     t.last <- tail(attr(obj, "t.obs"), 1)
 
     newargs <- args
-    newargs$t.obs <- (args$t.obs - t.last)
-    newargs$dose$t.dose <- (args$dose$t.dose - t.last)
+    newargs$t.obs <- (t.obs - t.last)
     newargs$initstate <- as.numeric(attr(obj, "finalstate"))
+
+    if (!is.null(args$dose)) {
+        if (!is.null(args$dose$t.dose)) {
+            newargs$dose$t.dose <- (args$dose$t.dose - t.last)
+        } else {
+            warning("No t.dose provided. Assuming last time point of obj.")
+            newargs$dose$t.dose <- rep(0, length=nrow(args$dose))
+        }
+        if (any(newargs$dose$t.dose < 0)) {
+            warning("Doses before the end of the previous profile. Expect strange behavior.")
+        }
+    }
+
+    if (any(newargs$t.obs < 0)) {
+        warning("Observations before the end of the previous profile requested. Expect strange behavior.")
+    }
 
     obj2 <- do.call(pkprofile, newargs)
     attr(obj2, "t.obs") <- attr(obj2, "t.obs") + t.last
@@ -292,6 +298,7 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
     if (is.null(dose$cmt))    dose$cmt    <- 0
     if (is.null(dose$lag))    dose$lag    <- 0
     if (is.null(dose$f))      dose$f      <- 1
+    dose <- dose[, c("t.dose", "amt", "rate", "dur", "ii", "addl", "ss", "cmt", "lag", "f")]
 
     dose$t.dose [is.na(dose$t.dose)] <- 0
     dose$amt    [is.na(dose$amt   )] <- 1
@@ -466,6 +473,25 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
 #' @export
 finalstate <- function(x) {
     as.numeric(attr(x, "finalstate"))
+}
+
+#' Get the doses from a PK profile.
+#' @param x A object of class \code{\link{pkprofile}}.
+#' @return A \code{data.frame} containing the realized doses, one per row. The
+#' \code{data.frame} has all the columns described in \code{\link{pkprofile}},
+#' except \code{addl}, since all additional doses have been expanded to
+#' individual rows. It also has a \code{conc} column with the simulated
+#' concentration at the time of the dose.
+#' @seealso
+#' \code{\link{pkprofile}}
+#' @examples
+#' t.obs <- seq(0, 6*24, 0.5)
+#' y <- pkprofile(t.obs, cl=0.5, vc=11, ka=1.3,
+#'     dose=list(t.dose=c(0, 24*2 + 14), amt=c(100, 50), addl=c(4, 0), ii=24))
+#' dose.frame(y)
+#' @export
+dose.frame <- function(x) {
+    attr(x, "dose")
 }
 
 #' Derive secondary PK parameters.
