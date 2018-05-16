@@ -11,7 +11,7 @@ pkprofile(...)
 \method{pkprofile}{default}(t.obs = seq(0, 24, 0.1), cl = 1, vc = 5,
   q = numeric(0), vp = numeric(0), ka = 0, dose = list(t.dose = 0, amt =
   1, rate = 0, dur = 0, ii = 24, addl = 0, ss = 0, cmt = 0, lag = 0, f = 1),
-  sc = vc, ...)
+  sc = vc, initstate = NULL, ...)
 
 \method{pkprofile}{matrix}(A, t.obs = seq(0, 24, 0.1), dose = list(t.dose =
   0, amt = 1, rate = 0, dur = 0, ii = 24, addl = 0, ss = 0, cmt = 0, lag = 0, f
@@ -60,13 +60,13 @@ May contain the following elements:
 \item{sc}{A scaling constant for the central compartment. Concentrations are
 obtained by dividing amounts by this constant.}
 
+\item{initstate}{A numeric vector containing values to initialize the
+compartments.}
+
 \item{A}{A matrix of first-order rate constants between the compartments.}
 
 \item{defdose}{The default dose compartment when the compartment is
 missing or 0.}
-
-\item{initstate}{A numeric vector containing values to initialize the
-compartments.}
 }
 \value{
 An object of class "pkprofile", which simply a numeric vector of

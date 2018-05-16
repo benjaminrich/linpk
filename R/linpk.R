@@ -209,7 +209,12 @@ pkprofile.pkprofile <- function(obj, t.obs, ..., append=TRUE) {
 #' @export
 pkprofile.default <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), vp=numeric(0), ka=0,
     dose=list(t.dose=0, amt=1, rate=0, dur=0, ii=24, addl=0, ss=0, cmt=0, lag=0, f=1),
-    sc=vc, ...) {
+    sc=vc, initstate=NULL, ...) {
+
+    if (length(list(...)) > 0) {
+        warning(sprintf("Unexpected argument(s): %s",
+            paste(names(list(...)), collapse=", ")))
+    }
 
     # Check arguments
     if (!(is.numeric(cl) && length(cl) == 1 && !is.na(cl) && cl > 0)) {
@@ -250,7 +255,7 @@ pkprofile.default <- function(t.obs=seq(0, 24, 0.1), cl=1, vc=5, q=numeric(0), v
     }
 
     structure(
-        pkprofile.matrix(A, t.obs=t.obs, dose=dose, defdose=defdose, sc=sc, call=match.call(), ...),
+        pkprofile.matrix(A, t.obs=t.obs, dose=dose, defdose=defdose, sc=sc, initstate=initstate, call=match.call(), ...),
         pkpar=list(cl=cl, vc=vc, q=q, vp=vp, ka=ka))
 }
 
@@ -298,7 +303,13 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
     if (is.null(dose$cmt))    dose$cmt    <- 0
     if (is.null(dose$lag))    dose$lag    <- 0
     if (is.null(dose$f))      dose$f      <- 1
-    dose <- dose[, c("t.dose", "amt", "rate", "dur", "ii", "addl", "ss", "cmt", "lag", "f")]
+
+    dosecols <- c("t.dose", "amt", "rate", "dur", "ii", "addl", "ss", "cmt", "lag", "f")
+    if (!all(names(dose) %in% dosecols)) {
+        warning(sprintf("Unrecognized dose item(s): %s",
+            paste(setdiff(names(dose), dosecols), collapse=", ")))
+    }
+    dose <- dose[, dosecols]
 
     dose$t.dose [is.na(dose$t.dose)] <- 0
     dose$amt    [is.na(dose$amt   )] <- 1
