@@ -2,19 +2,23 @@
 % Please edit documentation in R/linpk.R
 \name{finalstate}
 \alias{finalstate}
-\title{Get the final state of a linear PK system.}
+\alias{finaltime}
+\title{Get the final state or time of a PK profile.}
 \usage{
 finalstate(x)
+
+finaltime(x)
 }
 \arguments{
 \item{x}{A object of class \code{\link{pkprofile}}.}
 }
 \value{
 A \code{numeric} vector containing the state of each compartment at
-the final observation time.
+the final observation time (\code{finalstate}), or the final observation
+time itself (\code{finaltime}).
 }
 \description{
-Get the final state of a linear PK system.
+Get the final state or time of a PK profile.
 }
 \examples{
 # Administer a dose at time 0 and a second dose using the final state
@@ -25,5 +29,13 @@ finalstate(y)
 y2 <- pkprofile(t.obs, cl=0.25, vc=5, ka=1, dose=list(t.dose=0, amt=1), initstate=finalstate(y))
 plot(y, xlim=c(0, 24), ylim=c(0, max(y2)), col="blue")  # First dose
 lines(t.obs+12, y2, col="red")                          # Second dose
-}
 
+# Add a vertical line to show where the first profile ends.
+abline(v=finaltime(y), col="gray75", lty=2)
+}
+\seealso{
+\itemize{
+  \item \code{\link{pkprofile}} for generating a PK profile.
+  \item \code{\link{pkprofile.pkprofile}} for appending to an exisiting PK profile.
+}
+}

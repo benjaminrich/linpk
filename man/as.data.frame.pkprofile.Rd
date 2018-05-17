@@ -24,4 +24,3 @@ complete state is appended (as a matrix column).
 \description{
 Coerse a \code{pkprofile} to a \code{data.frame}
 }
-

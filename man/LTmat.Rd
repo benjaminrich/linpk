@@ -19,4 +19,3 @@ Construct a symmetric matrix from its lower triangle.
 \examples{
 LTmat(1:6)
 }
-

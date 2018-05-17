@@ -11,7 +11,7 @@ pkprofile(...)
 \method{pkprofile}{default}(t.obs = seq(0, 24, 0.1), cl = 1, vc = 5,
   q = numeric(0), vp = numeric(0), ka = 0, dose = list(t.dose = 0, amt =
   1, rate = 0, dur = 0, ii = 24, addl = 0, ss = 0, cmt = 0, lag = 0, f = 1),
-  sc = vc, ...)
+  sc = vc, initstate = NULL, ...)
 
 \method{pkprofile}{matrix}(A, t.obs = seq(0, 24, 0.1), dose = list(t.dose =
   0, amt = 1, rate = 0, dur = 0, ii = 24, addl = 0, ss = 0, cmt = 0, lag = 0, f
@@ -54,43 +54,23 @@ May contain the following elements:
   compartment for first-order absorption (i.e. \code{ka > 0}), and central
   compartment otherwise.}
   \item{\code{lag}}{Time lag (default 0).}
-  \item{\code{f}}{Bioavailable fraction (default 0).}
+  \item{\code{f}}{Bioavailable fraction (default 1).}
 }}
 
 \item{sc}{A scaling constant for the central compartment. Concentrations are
 obtained by dividing amounts by this constant.}
 
+\item{initstate}{A numeric vector containing values to initialize the
+compartments.}
+
 \item{A}{A matrix of first-order rate constants between the compartments.}
 
 \item{defdose}{The default dose compartment when the compartment is
 missing or 0.}
-
-\item{initstate}{A numeric vector containing values to initialize the
-compartments.}
 }
 \value{
 An object of class "pkprofile", which simply a numeric vector of
-concentration values with some attributes attached to it. These include:
-\describe{
-  \item{\code{t.obs}}{Numeric vector of concentration times.}
-  \item{\code{t.dose}}{Numeric vecotr of dose time.}
-  \item{\code{secondary}}{A list of derived secondary PK parameters. This includes:
-    \describe{
-      \item{\code{HLterm}}{Terminal half-life.}
-      \item{\code{Ctrough}}{Concentration value at the time the dose was
-      given (assuming this time is one of those in \code{t.obs}, otherwise
-      at the most recent previous observation time}.
-      \item{\code{Cmin}}{The minimum concentration observed in the time
-      interval between two consecutive doses.}
-      \item{\code{Cmax}}{The minimum concentration observed in the time
-      interval between two consecutive doses.}
-      \item{\code{AUC}}{The area under the concentration-time curve in the time
-      interval between two consecutive doses, calcuated by the trapezoid rule.}
-    \code{Ctrough}, \code{Cmin}, \code{Cmax} and \code{AUC} are vectors of
-    length \code{j - 1} where \code{j} is the number of doses given. It is
-    recommended that \code{t.obs} be a superset of \code{t.dose}.}
-  }
-}
+concentration values with some attributes attached to it.
 This object has its own methods for \code{print}, \code{plot}, \code{lines} and \code{points}.
 }
 \description{
@@ -106,6 +86,7 @@ specified.
 
 \item \code{matrix}: Matrix method.
 }}
+
 \examples{
 # Default values, a bolus injection
 y <- pkprofile()
@@ -173,4 +154,11 @@ yss <- pkprofile(t.obs, cl=cl, vc=vc, dose=list(dur=dur, amt=amt, addl=9, ii=12,
 lines(yss, col="red")
 
 }
-
+\seealso{
+\code{\link{halflife}}
+\code{\link{secondary}}
+\code{\link{print.pkprofile}}
+\code{\link{plot.pkprofile}}
+\code{\link{lines.pkprofile}}
+\code{\link{points.pkprofile}}
+}

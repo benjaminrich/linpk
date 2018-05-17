@@ -57,4 +57,3 @@ with(secondary(y), points(From, Ctrough, pch=19, col="green"))
 with(secondary(y), points(From + 6, Cave, pch=19, col="purple", cex=2))
 
 }
-
