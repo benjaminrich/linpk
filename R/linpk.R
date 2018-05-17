@@ -474,12 +474,16 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
         V          = V)
 }
 
-#' Get the final state of a linear PK system.
+#' Get the final state or time of a PK profile.
 #' @param x A object of class \code{\link{pkprofile}}.
 #' @return A \code{numeric} vector containing the state of each compartment at
-#' the final observation time.
+#' the final observation time (\code{finalstate}), or the final observation
+#' time itself (\code{finaltime}).
 #' @seealso
-#' \code{\link{pkprofile.pkprofile}}
+#' \itemize{
+#'   \item \code{\link{pkprofile}} for generating a PK profile.
+#'   \item \code{\link{pkprofile.pkprofile}} for appending to an exisiting PK profile.
+#' }
 #' @examples
 #' # Administer a dose at time 0 and a second dose using the final state
 #' # from the first dose (at 12h) as the initial state for the second dose.
@@ -489,6 +493,8 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
 #' y2 <- pkprofile(t.obs, cl=0.25, vc=5, ka=1, dose=list(t.dose=0, amt=1), initstate=finalstate(y))
 #' plot(y, xlim=c(0, 24), ylim=c(0, max(y2)), col="blue")  # First dose
 #' lines(t.obs+12, y2, col="red")                          # Second dose
+#'
+#' # Add a vertical line to show where the first profile ends.
 #' abline(v=finaltime(y), col="gray75", lty=2)
 #' @export
 finalstate <- function(x) {
@@ -497,7 +503,7 @@ finalstate <- function(x) {
     as.numeric(finalstate)
 }
 
-#' @describeIn finalstate Get the final observation time.
+#' @rdname finalstate
 #' @export
 finaltime <- function(x) {
     t.obs <- attr(x, "t.obs")
