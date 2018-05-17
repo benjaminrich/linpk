@@ -87,6 +87,12 @@ specified.
 \item \code{matrix}: Matrix method.
 }}
 
+\section{Warning}{
+
+Pay attention to the default arguments. They are there for convenience, but
+may lead to undesired results if one is not careful.
+}
+
 \examples{
 # Default values, a bolus injection
 y <- pkprofile()
@@ -155,10 +161,12 @@ lines(yss, col="red")
 
 }
 \seealso{
-\code{\link{halflife}}
-\code{\link{secondary}}
-\code{\link{print.pkprofile}}
-\code{\link{plot.pkprofile}}
-\code{\link{lines.pkprofile}}
-\code{\link{points.pkprofile}}
+\itemize{
+  \item \code{\link{halflife}}
+  \item \code{\link{secondary}}
+  \item \code{\link{print.pkprofile}}
+  \item \code{\link{plot.pkprofile}}
+  \item \code{\link{lines.pkprofile}}
+  \item \code{\link{points.pkprofile}}
+}
 }

@@ -47,13 +47,18 @@
 #' @return An object of class "pkprofile", which simply a numeric vector of
 #' concentration values with some attributes attached to it.
 #' This object has its own methods for \code{print}, \code{plot}, \code{lines} and \code{points}.
+#' @section Warning:
+#' Pay attention to the default arguments. They are there for convenience, but
+#' may lead to undesired results if one is not careful.
 #' @seealso
-#' \code{\link{halflife}}
-#' \code{\link{secondary}}
-#' \code{\link{print.pkprofile}}
-#' \code{\link{plot.pkprofile}}
-#' \code{\link{lines.pkprofile}}
-#' \code{\link{points.pkprofile}}
+#' \itemize{
+#'   \item \code{\link{halflife}}
+#'   \item \code{\link{secondary}}
+#'   \item \code{\link{print.pkprofile}}
+#'   \item \code{\link{plot.pkprofile}}
+#'   \item \code{\link{lines.pkprofile}}
+#'   \item \code{\link{points.pkprofile}}
+#' }
 #' @examples
 #' # Default values, a bolus injection
 #' y <- pkprofile()
@@ -165,12 +170,17 @@ pkprofile <- function(...) UseMethod("pkprofile")
 #' @export
 pkprofile.pkprofile <- function(obj, t.obs=finaltime(obj) + seq(0, 24, 0.1), ..., append=TRUE) {
     args <- list(...)
+    newargs <- args
 
     t.last <- finaltime(obj)
-
-    newargs <- args
-    newargs$t.obs <- (t.obs - t.last)
-    newargs$initstate <- finalstate(obj)
+    if (length(t.last) == 0) {
+        newargs$t.obs <- t.obs
+        newargs$initstate <- NULL
+        t.last <- 0
+    } else {
+        newargs$t.obs <- (t.obs - t.last)
+        newargs$initstate <- finalstate(obj)
+    }
 
     if (!is.null(args$dose)) {
         if (!is.list(args$dose)) {
@@ -203,8 +213,12 @@ pkprofile.pkprofile <- function(obj, t.obs=finaltime(obj) + seq(0, 24, 0.1), ...
         obj3 <- c(obj, obj2)
         attributes(obj3) <- attributes(obj2)
         attr(obj3, "t.obs") <- c(attr(obj, "t.obs"), attr(obj2, "t.obs"))
-        attr(obj3, "dose") <- rbind(attr(obj, "dose"), attr(obj2, "dose"))
         attr(obj3, "state") <- cbind(attr(obj, "state"), attr(obj2, "state"))
+        dose1 <- dose.frame(obj)
+        dose2 <- dose.frame(obj2)
+        dose1[,setdiff(names(dose2), names(dose1))] <- NA
+        dose2[,setdiff(names(dose1), names(dose2))] <- NA
+        attr(obj3, "dose") <- rbind(dose1, dose2[,names(dose1)])
         obj3
     } else {
         obj2
@@ -580,8 +594,9 @@ secondary <- function(x, From=NULL, To=NULL, include.dose.times=T) {
         time <- c(time, dose$t.dose)
         conc <- c(conc, dose$conc)
         if (!is.null(dose$t.eoi)) {
-            time <- c(time, dose$t.eoi)
-            conc <- c(conc, dose$conc.eoi)
+            i <- !is.na(dose$t.eoi)
+            time <- c(time, dose$t.eoi[i])
+            conc <- c(conc, dose$conc.eoi[i])
         }
     }
     o <- order(time)
