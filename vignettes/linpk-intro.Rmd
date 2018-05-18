@@ -5,6 +5,7 @@ date: "`r Sys.Date()`"
 output: 
   rmarkdown::html_vignette:
     css: vignette.css
+    toc: true
 vignette: >
   %\VignetteIndexEntry{Simulating Pharmacokinetic Concentration-Time Profiles With the linpk Package}
   %\VignetteEngine{knitr::rmarkdown}
@@ -326,6 +327,34 @@ for (day in 2:8) {
 plot(y, main="Clearance increasing by 20% each day")
 ```
 
+***Caution:*** This approach does NOT work if the parameters change in the
+middle of a zero-order infusion. In that case, it would be necessary to split
+the infusion at the time when the parameters change.
+
+## Shiny app
+
+The package includes a small shiny app for interactive exploration. To run it,
+the following packages must be installed:
+[shiny](https://CRAN.R-project.org/package=shiny),
+[shinyjs](https://CRAN.R-project.org/package=shinyjs),
+[shinyAce](https://CRAN.R-project.org/package=shinyAce),
+[dygraphs](https://CRAN.R-project.org/package=dygraphs). It can then be run by
+the command:
+
+```{r eval=F}
+linpkApp()
+```
+
+The app will open in a browser. It looks like this:
+
+![Screenshot of the shiny app](./screenshot_shiny_1.png){width=100%}
+
+You can enter different doses, vary the PK parameters by number or slider, and
+modify the units and time scale. There are tabs along the top to show a table
+of derived secondary parameters, to download a CSV file of the simulated data
+points, and to generate source code for the simulation that can be copied
+directly to a script.
+
 ## Limitations
 
 Compared to more general ODE solvers ([mrgsolve](http://mrgsolve.github.io/),
@@ -333,6 +362,6 @@ Compared to more general ODE solvers ([mrgsolve](http://mrgsolve.github.io/),
 [RxODE](https://github.com/nlmixrdevelopment/RxODE)), this package has some
 limitations, the most obvious being that it can only simulate from *linear* PK
 models. This means that it cannot be used to simulate from most PD models, for
-instance. Another limitation is that parameters must be fixed value, they
-cannot change over time.
+instance. Another disadvantage is that simulating time-varying parameters must
+be done with iterative function calls.
 

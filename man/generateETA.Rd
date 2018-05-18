@@ -2,7 +2,7 @@
 % Please edit documentation in R/linpk.R
 \name{generateETA}
 \alias{generateETA}
-\title{Generate individual random effects from a multivariate normal distribution}
+\title{Generate individual random effects from a multivariate normal distribution.}
 \usage{
 generateETA(n, omegaLT, omega = LTmat(omegaLT),
   eta.names = sprintf("ETA\%d", 1:nrow(omega)))
@@ -22,7 +22,7 @@ An \eqn{n \times p} matrix, where each row contains the vector of random
 effects for one individual (\eqn{p} is the size of the covariance matrix).
 }
 \description{
-Generate individual random effects from a multivariate normal distribution
+Generate individual random effects from a multivariate normal distribution.
 }
 \examples{
 omegaLT <- c(0.123, 0.045, 0.678)

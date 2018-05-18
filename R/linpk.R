@@ -147,6 +147,9 @@ pkprofile <- function(...) UseMethod("pkprofile")
 #' If the previous profile ends before the new sampling starts, the \emph{new}
 #' parameters will be used to advance the system to the start of the new
 #' sampling.
+#'
+#' Any ongoing zero-order infusion at the end of the previous profile is
+#' dropped. The remaining infusion amount will NOT be carried forward.
 #' @seealso
 #' \code{\link{pkprofile}}
 #' @examples
@@ -657,9 +660,16 @@ AUC.by.trapezoid <- function(x, y) {
     sum(0.5 * (y[-1] + y[-length(y)]) * diff(x))
 }
 
-Tmax.oral1cpt <- function(cl, vc, ka) {
+Tmax.oral1cpt <- function(cl, vc, ka, ss=FALSE, ii) {
     ke <- cl/vc
-    log(ka/ke)/(ka - ke)
+    if (ss) {
+        if (missing(ii)) {
+            stop("ss requires that ii be specified")
+        }
+        log((ka * (1 - exp(-ke*ii)))/(ke*(1 - exp(-ka*ii))))/(ka - ke)
+    } else {
+        log(ka/ke)/(ka - ke)
+    }
 }
 
 #' Half-lives of a linear PK system.
@@ -866,7 +876,7 @@ blockdiag <- function(...) {
     m
 }
 
-#' Generate individual random effects from a multivariate normal distribution
+#' Generate individual random effects from a multivariate normal distribution.
 #' @param n The number of individuals.
 #' @param omegaLT A numberic vector giving the elements of the lower triangle
 #' of the covariance matrix by row.
@@ -887,4 +897,32 @@ generateETA <- function(n, omegaLT, omega=LTmat(omegaLT), eta.names=sprintf("ETA
     x
 }
 
+#' Runs the interactive shiny app.
+#' @param ... Arguments passed to \code{shiny::runApp()}.
+#' @return Called for its side effects.
+#' @examples
+#' \dontrun{
+#' linpkApp()
+#' }
+#' @export
+linpkApp <- function(...) {
+    if (!requireNamespace("shiny", quietly = TRUE)) {
+        stop("Please install `shiny` before running the app.", call.=F)
+    }
+    if (!requireNamespace("shinyjs", quietly = TRUE)) {
+        stop("Please install `shinyjs` before running the app.", call.=F)
+    }
+    if (!requireNamespace("shinyAce", quietly = TRUE)) {
+        stop("Please install `shinyAce` before running the app.", call.=F)
+    }
+    if (!requireNamespace("dygraphs", quietly = TRUE)) {
+        stop("Please install `dygraphs` before running the app.", call.=F)
+    }
+    appDir <- system.file("demo-app", package="linpk")
+    if (appDir == "") {
+        stop("It seems that the app is not installed (or could not be found). Try re-installing `linpk`.", call.=F)
+    }
+    shiny::runApp(appDir, ...)
+    invisible(NULL)
+}
 
