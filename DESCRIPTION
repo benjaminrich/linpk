@@ -12,6 +12,6 @@ Description: Generate concentration-time profiles from linear pharmacokinetic
   computed.
 License: GPL-2
 Imports: graphics,utils,mvtnorm
-Suggests: knitr
+Suggests: knitr,shiny
 VignetteBuilder: knitr
 RoxygenNote: 6.0.1

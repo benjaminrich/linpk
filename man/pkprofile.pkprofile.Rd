@@ -32,6 +32,9 @@ The new parameters take effect at the time when the previous profile ends.
 If the previous profile ends before the new sampling starts, the \emph{new}
 parameters will be used to advance the system to the start of the new
 sampling.
+
+Any ongoing zero-order infusion at the end of the previous profile is
+dropped. The remaining infusion amount will NOT be carried forward.
 }
 
 \examples{
