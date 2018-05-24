@@ -7,9 +7,10 @@
 cor2cov(cor, sd)
 }
 \arguments{
-\item{cor}{A correlation matrix.}
+\item{cor}{A correlation matrix. If \code{sd} is missing, the diagonal
+entries are taken to be the standard deviations, otherwise they are ignored.}
 
-\item{sd}{A vector of standard deviations.}
+\item{sd}{A vector of standard deviations (optional).}
 }
 \value{
 A covariance matrix.

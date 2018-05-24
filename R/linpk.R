@@ -836,13 +836,18 @@ LTmat <- function(LT) {
 }
 
 #' Convert from standard deviation and correlation matrix to covariance matrix.
-#' @param cor A correlation matrix.
-#' @param sd A vector of standard deviations.
+#' @param cor A correlation matrix. If \code{sd} is missing, the diagonal
+#' entries are taken to be the standard deviations, otherwise they are ignored.
+#' @param sd A vector of standard deviations (optional).
 #' @return A covariance matrix.
 #' @examples
 #' cor2cov(matrix(c(1, 0.5, 0.5, 1), 2, 2), 0.1)
 #' @export
 cor2cov <- function(cor, sd) {
+    if (missing(sd)) {
+        sd <- diag(cor)
+    }
+    diag(cor) <- 1
     n <- nrow(cor)
     diag(sd, n) %*% cor %*% diag(sd, n)
 }
