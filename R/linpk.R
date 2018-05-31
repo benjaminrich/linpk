@@ -905,6 +905,15 @@ generateETA <- function(n, omegaLT, omega=LTmat(omegaLT), eta.names=sprintf("ETA
 #' Runs the interactive shiny app.
 #' @param ... Arguments passed to \code{shiny::runApp()}.
 #' @return Called for its side effects.
+#' @section Note:
+#' The app requires the following packages:
+#' \itemize{
+#'   \item `shiny`
+#'   \item `shinyjs`
+#'   \item `shinyAce`
+#'   \item `dygraphs`
+#' }
+#' Make they are installed or the app won't work.
 #' @examples
 #' \dontrun{
 #' linpkApp()
@@ -913,15 +922,6 @@ generateETA <- function(n, omegaLT, omega=LTmat(omegaLT), eta.names=sprintf("ETA
 linpkApp <- function(...) {
     if (!requireNamespace("shiny", quietly = TRUE)) {
         stop("Please install `shiny` before running the app.", call.=F)
-    }
-    if (!requireNamespace("shinyjs", quietly = TRUE)) {
-        stop("Please install `shinyjs` before running the app.", call.=F)
-    }
-    if (!requireNamespace("shinyAce", quietly = TRUE)) {
-        stop("Please install `shinyAce` before running the app.", call.=F)
-    }
-    if (!requireNamespace("dygraphs", quietly = TRUE)) {
-        stop("Please install `dygraphs` before running the app.", call.=F)
     }
     appDir <- system.file("demo-app", package="linpk")
     if (appDir == "") {

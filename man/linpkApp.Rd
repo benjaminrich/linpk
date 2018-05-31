@@ -15,6 +15,18 @@ Called for its side effects.
 \description{
 Runs the interactive shiny app.
 }
+\section{Note}{
+
+The app requires the following packages:
+\itemize{
+  \item `shiny`
+  \item `shinyjs`
+  \item `shinyAce`
+  \item `dygraphs`
+}
+Make they are installed or the app won't work.
+}
+
 \examples{
 \dontrun{
 linpkApp()
