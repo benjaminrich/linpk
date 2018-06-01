@@ -379,6 +379,12 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
     n <- nrow(A)
     eigenA <- eigen(A)
     L <- eigenA$value
+    if (any(L == 0)) {
+        stop("The solution to the system of ODE could not be found (singular matrix)")
+    }
+    if (length(unique(L)) != length(L)) {
+        stop("Repeated eigenvalues. Solving these types of systems is not implemented in `linpk`")
+    }
     V <- eigenA$vector
     qrV <- qr(V)
     qrA <- qr(A)
@@ -663,7 +669,7 @@ AUC.by.trapezoid <- function(x, y) {
 Tmax.oral1cpt <- function(cl, vc, ka, ss=FALSE, ii) {
     ke <- cl/vc
     if (ss) {
-        if (missing(ii)) {
+        if (missing(ii) || is.null(ii)) {
             stop("ss requires that ii be specified")
         }
         log((ka * (1 - exp(-ke*ii)))/(ke*(1 - exp(-ka*ii))))/(ka - ke)
@@ -905,6 +911,15 @@ generateETA <- function(n, omegaLT, omega=LTmat(omegaLT), eta.names=sprintf("ETA
 #' Runs the interactive shiny app.
 #' @param ... Arguments passed to \code{shiny::runApp()}.
 #' @return Called for its side effects.
+#' @section Note:
+#' The app requires the following packages:
+#' \itemize{
+#'   \item `shiny`
+#'   \item `shinyjs`
+#'   \item `shinyAce`
+#'   \item `dygraphs`
+#' }
+#' Make they are installed or the app won't work.
 #' @examples
 #' \dontrun{
 #' linpkApp()
@@ -913,15 +928,6 @@ generateETA <- function(n, omegaLT, omega=LTmat(omegaLT), eta.names=sprintf("ETA
 linpkApp <- function(...) {
     if (!requireNamespace("shiny", quietly = TRUE)) {
         stop("Please install `shiny` before running the app.", call.=F)
-    }
-    if (!requireNamespace("shinyjs", quietly = TRUE)) {
-        stop("Please install `shinyjs` before running the app.", call.=F)
-    }
-    if (!requireNamespace("shinyAce", quietly = TRUE)) {
-        stop("Please install `shinyAce` before running the app.", call.=F)
-    }
-    if (!requireNamespace("dygraphs", quietly = TRUE)) {
-        stop("Please install `dygraphs` before running the app.", call.=F)
     }
     appDir <- system.file("demo-app", package="linpk")
     if (appDir == "") {
