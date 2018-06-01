@@ -1,7 +1,7 @@
 Package: linpk
 Type: Package
-Version: 0.5
-Date: 2018-05-16
+Version: 1.0
+Date: 2018-06-01
 Title: Generate Concentration-Time Profiles From Linear PK Systems
 Authors@R: person("Benjamin", "Rich", role=c("aut", "cre"), email="mail@benjaminrich.net")
 Description: Generate concentration-time profiles from linear pharmacokinetic
@@ -10,7 +10,7 @@ Description: Generate concentration-time profiles from linear pharmacokinetic
   steady-state conditions. Single or multiple doses may be specified. Secondary
   (derived) PK paramters (e.g. Cmax, Ctrough, AUC, Tmax, half-life, etc.) are
   computed.
-License: GPL-2
+License: GPL-3
 Imports: graphics,utils,mvtnorm
 Suggests: knitr,shiny
 VignetteBuilder: knitr
