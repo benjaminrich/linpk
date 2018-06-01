@@ -1,7 +1,7 @@
 #' Generate a concentration-time profile.
 #'
 #' This function generates concentration-time profiles from a linear
-#' pharmacokinetic (PK) system, possibly with first-order absoption or
+#' pharmacokinetic (PK) system, possibly with first-order absorption or
 #' zero-order infusion, possibly with one or more peripheral compartments, and
 #' possibly under steady-state conditions. Single or multiple doses may be
 #' specified.
@@ -505,7 +505,7 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
 #' @seealso
 #' \itemize{
 #'   \item \code{\link{pkprofile}} for generating a PK profile.
-#'   \item \code{\link{pkprofile.pkprofile}} for appending to an exisiting PK profile.
+#'   \item \code{\link{pkprofile.pkprofile}} for appending to an existing PK profile.
 #' }
 #' @examples
 #' # Administer a dose at time 0 and a second dose using the final state
@@ -727,7 +727,7 @@ halflife <- function(x) {
     HL
 }
 
-#' Coerse a \code{pkprofile} to a \code{data.frame}
+#' Coerce a \code{pkprofile} to a \code{data.frame}
 #' @param x An object of class \code{pkprofile}.
 #' @param ... Further arguments passed along.
 #' @param col.names Character vector of length 2 giving the names for the time and concentration columns.
@@ -889,7 +889,7 @@ blockdiag <- function(...) {
 
 #' Generate individual random effects from a multivariate normal distribution.
 #' @param n The number of individuals.
-#' @param omegaLT A numberic vector giving the elements of the lower triangle
+#' @param omegaLT A numeric vector giving the elements of the lower triangle
 #' of the covariance matrix by row.
 #' @param omega The covariance matrix.
 #' @param eta.names A character vector of names for each random effect.

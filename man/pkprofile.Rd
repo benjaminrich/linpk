@@ -75,7 +75,7 @@ This object has its own methods for \code{print}, \code{plot}, \code{lines} and 
 }
 \description{
 This function generates concentration-time profiles from a linear
-pharmacokinetic (PK) system, possibly with first-order absoption or
+pharmacokinetic (PK) system, possibly with first-order absorption or
 zero-order infusion, possibly with one or more peripheral compartments, and
 possibly under steady-state conditions. Single or multiple doses may be
 specified.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/linpk.R
 \name{as.data.frame.pkprofile}
 \alias{as.data.frame.pkprofile}
-\title{Coerse a \code{pkprofile} to a \code{data.frame}}
+\title{Coerce a \code{pkprofile} to a \code{data.frame}}
 \usage{
 \method{as.data.frame}{pkprofile}(x, ..., col.names = c("time", "conc"),
   .state = FALSE)
@@ -22,5 +22,5 @@ names specified in \code{col.names}). If \code{.state == TRUE}, then the
 complete state is appended (as a matrix column).
 }
 \description{
-Coerse a \code{pkprofile} to a \code{data.frame}
+Coerce a \code{pkprofile} to a \code{data.frame}
 }

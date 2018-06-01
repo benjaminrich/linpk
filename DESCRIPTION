@@ -5,10 +5,10 @@ Date: 2018-06-01
 Title: Generate Concentration-Time Profiles From Linear PK Systems
 Authors@R: person("Benjamin", "Rich", role=c("aut", "cre"), email="mail@benjaminrich.net")
 Description: Generate concentration-time profiles from linear pharmacokinetic
-  (PK) systems, possibly with first-order absoption or zero-order infusion,
+  (PK) systems, possibly with first-order absorption or zero-order infusion,
   possibly with one or more peripheral compartments, and possibly under
   steady-state conditions. Single or multiple doses may be specified. Secondary
-  (derived) PK paramters (e.g. Cmax, Ctrough, AUC, Tmax, half-life, etc.) are
+  (derived) PK parameters (e.g. Cmax, Ctrough, AUC, Tmax, half-life, etc.) are
   computed.
 License: GPL-3
 Imports: graphics,utils,mvtnorm
