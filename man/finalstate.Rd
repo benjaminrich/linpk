@@ -36,6 +36,6 @@ abline(v=finaltime(y), col="gray75", lty=2)
 \seealso{
 \itemize{
   \item \code{\link{pkprofile}} for generating a PK profile.
-  \item \code{\link{pkprofile.pkprofile}} for appending to an exisiting PK profile.
+  \item \code{\link{pkprofile.pkprofile}} for appending to an existing PK profile.
 }
 }

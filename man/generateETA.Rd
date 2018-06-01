@@ -10,7 +10,7 @@ generateETA(n, omegaLT, omega = LTmat(omegaLT),
 \arguments{
 \item{n}{The number of individuals.}
 
-\item{omegaLT}{A numberic vector giving the elements of the lower triangle
+\item{omegaLT}{A numeric vector giving the elements of the lower triangle
 of the covariance matrix by row.}
 
 \item{omega}{The covariance matrix.}
