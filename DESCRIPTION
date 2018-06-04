@@ -1,7 +1,7 @@
 Package: linpk
 Type: Package
 Version: 1.0
-Date: 2018-06-01
+Date: 2018-06-04
 Title: Generate Concentration-Time Profiles From Linear PK Systems
 Authors@R: person("Benjamin", "Rich", role=c("aut", "cre"), email="mail@benjaminrich.net")
 Description: Generate concentration-time profiles from linear pharmacokinetic
