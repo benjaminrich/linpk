@@ -448,7 +448,10 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
                 y0 <- rep(0, n)
             }
             Cinf <- solve(qrV, y0 - ystat)
-            i <- t1 > 0 & t1 <= dur 
+            if (any(t1==0)) {
+                y[,t1==0] <- y[,t1==0] + y0
+            }
+            i <- t1 > 0 & t1 < dur 
             y[,i] <- y[,i] + V %*% (Cinf * exp(L %o% t1[i])) + ystat
             y0 <- drop(V %*% (Cinf * exp(L * dur)) + ystat) # At EOI
             t1 <- tad - dur    # Advance time to EOI
@@ -466,10 +469,12 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
             } else {
                 y0 <- delta
             }
-            y[,t1==0] <- y[,t1==0] + y0
         }
 
         C <- solve(qrV, y0)
+        if (any(t1==0)) {
+            y[,t1==0] <- y[,t1==0] + y0
+        }
         i <- t1 > 0
         y[,i] <- y[,i] + V %*% (C * exp(L %o% t1[i]))
     }
