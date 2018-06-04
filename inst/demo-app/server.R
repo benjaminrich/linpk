@@ -145,8 +145,7 @@ function(input, output, session) {
     validate(need(v$num_dose > 0, "No dose information"))
 
     dose <- data.frame(
-      number=seq_len(v$num_dose),
-      ss     = FALSE,
+      ss     = rep(FALSE, v$num_dose),
       t.dose = 0,
       amt    = 0,
       cmt    = 0,
