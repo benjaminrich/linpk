@@ -448,7 +448,7 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
                 y0 <- rep(0, n)
             }
             Cinf <- solve(qrV, y0 - ystat)
-            i <- t1 >= 0 & t1 < dur 
+            i <- t1 > 0 & t1 <= dur 
             y[,i] <- y[,i] + V %*% (Cinf * exp(L %o% t1[i])) + ystat
             y0 <- drop(V %*% (Cinf * exp(L * dur)) + ystat) # At EOI
             t1 <- tad - dur    # Advance time to EOI
@@ -466,20 +466,23 @@ pkprofile.matrix <- function(A, t.obs=seq(0, 24, 0.1),
             } else {
                 y0 <- delta
             }
+            y[,t1==0] <- y[,t1==0] + y0
         }
 
         C <- solve(qrV, y0)
-        i <- t1 >= 0
+        i <- t1 > 0
         y[,i] <- y[,i] + V %*% (C * exp(L %o% t1[i]))
     }
 
-    state <- Re(y[, evid==0, drop=FALSE])
-    conc <- state[1,]/sc[1]
+    state.all <- Re(y)
+    conc.all <- state.all[1,]/sc[1]
+    state <- state.all[, evid==0, drop=FALSE]
+    conc <- conc.all[evid==0]
 
     # Keep track of the concentration at time of dose (Ctrough), and EOI
-    dose$conc <- Re(y[1, evid==1, drop=TRUE])/sc[1]
+    dose$conc <- conc.all[evid==1]
     if (any(dose$rate > 0)) {
-        dose$conc.eoi <- Re(y[1, evid==2, drop=TRUE])/sc[1]
+        dose$conc.eoi <- conc.all[evid==2]
         dose$conc.eoi[dose$rate == 0] <- NA
         dose$t.eoi[dose$rate == 0] <- NA
     }
