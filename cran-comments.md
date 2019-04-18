@@ -1,14 +1,12 @@
 ## Test environments
 
-* Local Windows 8.1, R 3.5.0 (x86_64-w64-mingw32)
+* Local Windows 10, R 3.5.3 (x86_64-w64-mingw32/x64)
 * Linux on travis-ci (release and devel)
 * win-builder (release and devel)
 
 ## R CMD check results
 
-There were no ERRORs, WARNINGs.
-
-NOTE: this is the first submission of this package to CRAN.
+There were no ERRORs, WARNINGs or NOTEs.
 
 ## Reverse dependencies
 
