@@ -44,7 +44,7 @@
 #' @param initstate A numeric vector containing values to initialize the
 #' compartments.
 #' @param ... Further arguments passed along to other methods.
-#' @return An object of class "pkprofile", which simply a numeric vector of
+#' @return An object of class "pkprofile", which is simply a numeric vector of
 #' concentration values with some attributes attached to it.
 #' This object has its own methods for \code{print}, \code{plot}, \code{lines} and \code{points}.
 #' @section Warning:
