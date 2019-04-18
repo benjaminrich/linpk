@@ -892,6 +892,10 @@ blockdiag <- function(...) {
         i <- (1:n[j]) + cn[j]
         m[i,i] <- b[[j]]
     }
+    rnam <- unlist(lapply(b, function(x) dimnames(x)[[1]]))
+    cnam <- unlist(lapply(b, function(x) dimnames(x)[[2]]))
+    if (length(rnam) == nrow(m)) { rownames(m) <- rnam }
+    if (length(cnam) == ncol(m)) { colnames(m) <- cnam }
     m
 }
 
