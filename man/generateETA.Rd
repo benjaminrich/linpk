@@ -4,8 +4,12 @@
 \alias{generateETA}
 \title{Generate individual random effects from a multivariate normal distribution.}
 \usage{
-generateETA(n, omegaLT, omega = LTmat(omegaLT),
-  eta.names = sprintf("ETA\%d", 1:nrow(omega)))
+generateETA(
+  n,
+  omegaLT,
+  omega = LTmat(omegaLT),
+  eta.names = sprintf("ETA\%d", 1:nrow(omega))
+)
 }
 \arguments{
 \item{n}{The number of individuals.}

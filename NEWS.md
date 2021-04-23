@@ -1,3 +1,7 @@
+# linpk 1.1.1
+
+* Address dependecy issue from CRAN maintainer.
+
 # linpk 1.1
 
 * Preserve names in blockdiag().

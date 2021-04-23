@@ -4,8 +4,7 @@
 \alias{as.data.frame.pkprofile}
 \title{Coerce a \code{pkprofile} to a \code{data.frame}}
 \usage{
-\method{as.data.frame}{pkprofile}(x, ..., col.names = c("time", "conc"),
-  .state = FALSE)
+\method{as.data.frame}{pkprofile}(x, ..., col.names = c("time", "conc"), .state = FALSE)
 }
 \arguments{
 \item{x}{An object of class \code{pkprofile}.}

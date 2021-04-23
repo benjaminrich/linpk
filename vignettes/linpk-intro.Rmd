@@ -1,11 +1,12 @@
 ---
-title: "Simulating Pharmacokinetic Concentration-Time Profiles With the `linpk` Package"
+title: "Simulating Pharmacokinetic Concentration-Time Profiles With the linpk Package"
 author: "Benjamin Rich"
 date: "`r Sys.Date()`"
 output: 
   rmarkdown::html_vignette:
     css: vignette.css
     toc: true
+    check_title: false
 vignette: >
   %\VignetteIndexEntry{Simulating Pharmacokinetic Concentration-Time Profiles With the linpk Package}
   %\VignetteEngine{knitr::rmarkdown}
@@ -43,7 +44,7 @@ combinations of the above.
 Meanwhile, there are now powerful and efficient ODE solvers in R that make it
 easy to simulate from any PK model, including
 [mrgsolve](http://mrgsolve.github.io/),
-[PKPDsim](http://pkpdsim.ronkeizer.com/), and
+[PKPDsim](https://github.com/InsightRX/PKPDsim), and
 [RxODE](https://github.com/nlmixrdevelopment/RxODE). These packages are much
 more powerful than `linpk`, which can only solve *linear* systems of ODE. What
 `linpk` offers in return is convenience; most models can be simulated from
