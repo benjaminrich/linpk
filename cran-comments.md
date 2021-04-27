@@ -13,6 +13,11 @@
   - Windows Server 2008 R2 SP1, R-devel, 32/64 bit
   - Ubuntu Linux 20.04.1 LTS, R-release, GCC
   - Fedora Linux, R-devel, clang, gfortran
+    - This had the following problem, which is unrelated to my package:
+      ```
+      Error: Bioconductor version '3.13' requires R version '4.1'; R version is too new; see
+      https://bioconductor.org/install
+      ```
 
 ## R CMD check results
 
