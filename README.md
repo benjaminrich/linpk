@@ -1,6 +1,8 @@
 # linpk
 
 [![Travis-CI Build Status](https://travis-ci.org/benjaminrich/linpk.svg?branch=master)](https://travis-ci.org/benjaminrich/linpk)
+[![CRAN\_Release\_Badge](http://www.r-pkg.org/badges/version-ago/linpk)](https://CRAN.R-project.org/package=linpk)
+[![CRAN\_Download\_Badge](http://cranlogs.r-pkg.org/badges/linpk)](https://CRAN.R-project.org/package=linpk)
 
 An R package for generating concentration-time profiles from linear pharmacokinetic (PK) systems.
 

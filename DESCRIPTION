@@ -4,6 +4,10 @@ Version: 1.1.1
 Date: 2021-04-23
 Title: Generate Concentration-Time Profiles from Linear PK Systems
 Authors@R: person("Benjamin", "Rich", role=c("aut", "cre"), email="mail@benjaminrich.net")
+Author: Benjamin Rich [aut, cre, cph]
+Maintainer: Benjamin Rich <mail@benjaminrich.net>
+URL: https://github.com/benjaminrich/linpk
+BugReports: https://github.com/benjaminrich/linpk/issues
 Description: Generate concentration-time profiles from linear pharmacokinetic
   (PK) systems, possibly with first-order absorption or zero-order infusion,
   possibly with one or more peripheral compartments, and possibly under
