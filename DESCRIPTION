@@ -4,7 +4,7 @@ Version: 1.1.1
 Date: 2021-04-23
 Title: Generate Concentration-Time Profiles from Linear PK Systems
 Authors@R: person("Benjamin", "Rich", role=c("aut", "cre"), email="mail@benjaminrich.net")
-Author: Benjamin Rich [aut, cre, cph]
+Author: Benjamin Rich [aut, cre]
 Maintainer: Benjamin Rich <mail@benjaminrich.net>
 URL: https://github.com/benjaminrich/linpk
 BugReports: https://github.com/benjaminrich/linpk/issues
