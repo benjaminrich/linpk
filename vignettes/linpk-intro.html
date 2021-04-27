@@ -12,7 +12,7 @@
 
 <meta name="author" content="Benjamin Rich" />
 
-<meta name="date" content="2021-04-23" />
+<meta name="date" content="2021-04-27" />
 
 <title>Simulating Pharmacokinetic Concentration-Time Profiles With the linpk Package</title>
 
@@ -134,7 +134,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <h1 class="title toc-ignore">Simulating Pharmacokinetic Concentration-Time Profiles With the linpk Package</h1>
 <h4 class="author">Benjamin Rich</h4>
-<h4 class="date">2021-04-23</h4>
+<h4 class="date">2021-04-27</h4>
 
 
 <div id="TOC">
@@ -159,7 +159,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <div id="introduction" class="section level2">
 <h2>Introduction</h2>
-<p>If you work in pharmacometrics, you have probably at some time or another written code to generate concentrations from a PK model by implementing the closed-form solution to a simple system of linear differential equations. The mathematical equations are readily available in many textbooks or online (for instance, <a href="http://mlxtran.lixoft.com/wp-content/uploads/sites/2/2016/02/PKPDlibrary.pdf">Mathematical Expressions of the Pharmacokinetic and Pharmacodynamic Models implemented in the Monolix</a> software by Bertrand and Mentré).</p>
+<p>If you work in pharmacometrics, you have probably at some time or another written code to generate concentrations from a PK model by implementing the closed-form solution to a simple system of linear differential equations. The mathematical equations are readily available in many textbooks or online (for instance, <a href="https://mlxtran.lixoft.com/wp-content/uploads/sites/2/2016/02/PKPDlibrary.pdf">Mathematical Expressions of the Pharmacokinetic and Pharmacodynamic Models implemented in the Monolix</a> software by Bertrand and Mentré).</p>
 <p>Each formula is specific with regard to:</p>
 <ul>
 <li>Dosing type: bolus, infusion (zero-order), absorption (first-order)</li>
@@ -167,7 +167,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li>Number of compartments: 1, 2, 3, …</li>
 </ul>
 <p>Implementing a different function for each combination you are likely to encounter is cumbersome, time consuming and error prone. Enter the <code>linpk</code> package, which conveniently uses a single function, <code>pkprofile</code>, to handle all combinations of the above.</p>
-<p>Meanwhile, there are now powerful and efficient ODE solvers in R that make it easy to simulate from any PK model, including <a href="http://mrgsolve.github.io/">mrgsolve</a>, <a href="https://github.com/InsightRX/PKPDsim">PKPDsim</a>, and <a href="https://github.com/nlmixrdevelopment/RxODE">RxODE</a>. These packages are much more powerful than <code>linpk</code>, which can only solve <em>linear</em> systems of ODE. What <code>linpk</code> offers in return is convenience; most models can be simulated from using a single line of code, and there is no need to write out the model in differential equation form or perform a compilation step. In addition, <code>linpk</code> has built-in convenience functions to calculate secondary PK parameters, such as half-life, AUC or Cmax, from the simulated concentration-time profile.</p>
+<p>Meanwhile, there are now powerful and efficient ODE solvers in R that make it easy to simulate from any PK model, including <a href="https://mrgsolve.github.io/">mrgsolve</a>, <a href="https://github.com/InsightRX/PKPDsim">PKPDsim</a>, and <a href="https://github.com/nlmixrdevelopment/RxODE">RxODE</a>. These packages are much more powerful than <code>linpk</code>, which can only solve <em>linear</em> systems of ODE. What <code>linpk</code> offers in return is convenience; most models can be simulated from using a single line of code, and there is no need to write out the model in differential equation form or perform a compilation step. In addition, <code>linpk</code> has built-in convenience functions to calculate secondary PK parameters, such as half-life, AUC or Cmax, from the simulated concentration-time profile.</p>
 </div>
 <div id="getting-started" class="section level2">
 <h2>Getting started</h2>
@@ -355,7 +355,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <div id="limitations" class="section level2">
 <h2>Limitations</h2>
-<p>Compared to more general ODE solvers (<a href="http://mrgsolve.github.io/">mrgsolve</a>, <a href="http://pkpdsim.ronkeizer.com/">PKPDsim</a>, <a href="https://github.com/nlmixrdevelopment/RxODE">RxODE</a>), this package has some limitations, the most obvious being that it can only simulate from <em>linear</em> PK models. This means that it cannot be used to simulate from most PD models, for instance. Another disadvantage is that simulating time-varying parameters must be done with iterative function calls.</p>
+<p>Compared to more general ODE solvers (<a href="https://mrgsolve.github.io/">mrgsolve</a>, <a href="https://github.com/InsightRX/PKPDsim">PKPDsim</a>, <a href="https://github.com/nlmixrdevelopment/RxODE">RxODE</a>), this package has some limitations, the most obvious being that it can only simulate from <em>linear</em> PK models. This means that it cannot be used to simulate from most PD models, for instance. Another disadvantage is that simulating time-varying parameters must be done with iterative function calls.</p>
 </div>
 
 

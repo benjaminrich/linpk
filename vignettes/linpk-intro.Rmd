@@ -27,7 +27,7 @@ closed-form solution to a simple system of linear differential equations. The
 mathematical equations are readily available in many textbooks or online (for
 instance, [Mathematical Expressions of the Pharmacokinetic and Pharmacodynamic
 Models implemented in the
-Monolix](http://mlxtran.lixoft.com/wp-content/uploads/sites/2/2016/02/PKPDlibrary.pdf)
+Monolix](https://mlxtran.lixoft.com/wp-content/uploads/sites/2/2016/02/PKPDlibrary.pdf)
 software by Bertrand and Mentr&eacute;).
 
 Each formula is specific with regard to:
@@ -43,7 +43,7 @@ combinations of the above.
 
 Meanwhile, there are now powerful and efficient ODE solvers in R that make it
 easy to simulate from any PK model, including
-[mrgsolve](http://mrgsolve.github.io/),
+[mrgsolve](https://mrgsolve.github.io/),
 [PKPDsim](https://github.com/InsightRX/PKPDsim), and
 [RxODE](https://github.com/nlmixrdevelopment/RxODE). These packages are much
 more powerful than `linpk`, which can only solve *linear* systems of ODE. What
@@ -358,8 +358,8 @@ directly to a script.
 
 ## Limitations
 
-Compared to more general ODE solvers ([mrgsolve](http://mrgsolve.github.io/),
-[PKPDsim](http://pkpdsim.ronkeizer.com/),
+Compared to more general ODE solvers ([mrgsolve](https://mrgsolve.github.io/),
+[PKPDsim](https://github.com/InsightRX/PKPDsim),
 [RxODE](https://github.com/nlmixrdevelopment/RxODE)), this package has some
 limitations, the most obvious being that it can only simulate from *linear* PK
 models. This means that it cannot be used to simulate from most PD models, for
