@@ -837,16 +837,19 @@ points.pkprofile <- function(x, y, ...) {
 #' Construct a symmetric matrix from its lower triangle.
 #' @param LT A numeric vector giving the elements of the lower triangle of the
 #' matrix by row (see examples).
+#' @param .names,.colnames,.rownames Optionally, specify row and columun names or the resulting matrix.
 #' @return A symmetric matrix.
 #' @examples
 #' LTmat(1:6)
 #' @export
-LTmat <- function(LT) {
+LTmat <- function(LT, .names=attr(LT, ".names"), .colnames=.names, .rownames=.names) {
     x <- length(LT)
     p <- (sqrt(8*x + 1) - 1)/2
     m <- matrix(0, p, p)
     m[upper.tri(m, diag=T)] <- LT
-    m + t(m) - diag(diag(m))
+    m <- m + t(m) - diag(diag(m))
+    colnames(m) <- .colnames; rownames(m) <- .rownames
+    m
 }
 
 #' Convert from standard deviation and correlation matrix to covariance matrix.
@@ -904,7 +907,9 @@ blockdiag <- function(...) {
 #' @param omegaLT A numeric vector giving the elements of the lower triangle
 #' of the covariance matrix by row.
 #' @param omega The covariance matrix.
-#' @param eta.names A character vector of names for each random effect.
+#' @param eta.names A character vector of names for each random effect
+#' (defaults to the column names of \code{omega}, or if \code{NULL} then to
+#' ETA1, ETA2, ...).
 #' @return An \eqn{n \times p} matrix, where each row contains the vector of random
 #' effects for one individual (\eqn{p} is the size of the covariance matrix).
 #' @seealso
@@ -914,7 +919,10 @@ blockdiag <- function(...) {
 #' omegaLT <- c(0.123, 0.045, 0.678)
 #' generateETA(10, omegaLT)
 #' @export
-generateETA <- function(n, omegaLT, omega=LTmat(omegaLT), eta.names=sprintf("ETA%d", 1:nrow(omega))) {
+generateETA <- function(n, omegaLT, omega=LTmat(omegaLT), eta.names=colnames(omega)) {
+    if (is.null(eta.names)) {
+        eta.names <- sprintf("ETA%d", 1:nrow(omega))
+    }
     x <- mvtnorm::rmvnorm(n, rep(0, nrow(omega)), omega)
     colnames(x) <- eta.names
     x

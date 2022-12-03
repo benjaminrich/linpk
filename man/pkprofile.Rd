@@ -15,8 +15,8 @@ pkprofile(...)
   q = numeric(0),
   vp = numeric(0),
   ka = 0,
-  dose = list(t.dose = 0, amt = 1, rate = 0, dur = 0, ii = 24, addl = 0, ss = 0, cmt =
-    0, lag = 0, f = 1),
+  dose = list(t.dose = 0, amt = 1, rate = 0, dur = 0, ii = 24, addl = 0, ss = 0, cmt = 0,
+    lag = 0, f = 1),
   sc = vc,
   initstate = NULL,
   ...
@@ -25,8 +25,8 @@ pkprofile(...)
 \method{pkprofile}{matrix}(
   A,
   t.obs = seq(0, 24, 0.1),
-  dose = list(t.dose = 0, amt = 1, rate = 0, dur = 0, ii = 24, addl = 0, ss = 0, cmt =
-    0, lag = 0, f = 1),
+  dose = list(t.dose = 0, amt = 1, rate = 0, dur = 0, ii = 24, addl = 0, ss = 0, cmt = 0,
+    lag = 0, f = 1),
   defdose = 1,
   sc = 1,
   initstate = NULL,
@@ -98,11 +98,11 @@ specified.
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{default}: Default method.
+\item \code{pkprofile(default)}: Default method.
 
-\item \code{matrix}: Matrix method.
+\item \code{pkprofile(matrix)}: Matrix method.
+
 }}
-
 \section{Warning}{
 
 Pay attention to the default arguments. They are there for convenience, but

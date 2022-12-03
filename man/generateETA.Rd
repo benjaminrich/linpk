@@ -4,12 +4,7 @@
 \alias{generateETA}
 \title{Generate individual random effects from a multivariate normal distribution.}
 \usage{
-generateETA(
-  n,
-  omegaLT,
-  omega = LTmat(omegaLT),
-  eta.names = sprintf("ETA\%d", 1:nrow(omega))
-)
+generateETA(n, omegaLT, omega = LTmat(omegaLT), eta.names = colnames(omega))
 }
 \arguments{
 \item{n}{The number of individuals.}
@@ -19,7 +14,9 @@ of the covariance matrix by row.}
 
 \item{omega}{The covariance matrix.}
 
-\item{eta.names}{A character vector of names for each random effect.}
+\item{eta.names}{A character vector of names for each random effect
+(defaults to the column names of \code{omega}, or if \code{NULL} then to
+ETA1, ETA2, ...).}
 }
 \value{
 An \eqn{n \times p} matrix, where each row contains the vector of random

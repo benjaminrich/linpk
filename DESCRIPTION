@@ -1,7 +1,7 @@
 Package: linpk
 Type: Package
-Version: 1.1.1
-Date: 2021-04-23
+Version: 1.1.2
+Date: 2022-12-03
 Title: Generate Concentration-Time Profiles from Linear PK Systems
 Authors@R: person("Benjamin", "Rich", role=c("aut", "cre"), email="mail@benjaminrich.net")
 Author: Benjamin Rich [aut, cre]
@@ -19,4 +19,4 @@ Imports: graphics,utils,mvtnorm
 Suggests: knitr,rmarkdown,shiny
 VignetteBuilder: knitr
 Encoding: UTF-8
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.1

@@ -4,11 +4,13 @@
 \alias{LTmat}
 \title{Construct a symmetric matrix from its lower triangle.}
 \usage{
-LTmat(LT)
+LTmat(LT, .names = attr(LT, ".names"), .colnames = .names, .rownames = .names)
 }
 \arguments{
 \item{LT}{A numeric vector giving the elements of the lower triangle of the
 matrix by row (see examples).}
+
+\item{.names, .colnames, .rownames}{Optionally, specify row and columun names or the resulting matrix.}
 }
 \value{
 A symmetric matrix.
