@@ -1,6 +1,10 @@
+# linpk 1.1.2
+
+* Change default names for generateETA.
+
 # linpk 1.1.1
 
-* Address dependecy issue from CRAN maintainer.
+* Address dependency issue from CRAN maintainer.
 
 # linpk 1.1
 

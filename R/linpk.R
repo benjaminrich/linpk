@@ -837,7 +837,7 @@ points.pkprofile <- function(x, y, ...) {
 #' Construct a symmetric matrix from its lower triangle.
 #' @param LT A numeric vector giving the elements of the lower triangle of the
 #' matrix by row (see examples).
-#' @param .names,.colnames,.rownames Optionally, specify row and columun names or the resulting matrix.
+#' @param .names,.colnames,.rownames Optionally, specify row and column names of the resulting matrix.
 #' @return A symmetric matrix.
 #' @examples
 #' LTmat(1:6)

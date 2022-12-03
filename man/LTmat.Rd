@@ -10,7 +10,7 @@ LTmat(LT, .names = attr(LT, ".names"), .colnames = .names, .rownames = .names)
 \item{LT}{A numeric vector giving the elements of the lower triangle of the
 matrix by row (see examples).}
 
-\item{.names, .colnames, .rownames}{Optionally, specify row and columun names or the resulting matrix.}
+\item{.names, .colnames, .rownames}{Optionally, specify row and column names of the resulting matrix.}
 }
 \value{
 A symmetric matrix.

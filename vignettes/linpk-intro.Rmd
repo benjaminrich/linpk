@@ -43,7 +43,7 @@ combinations of the above.
 
 Meanwhile, there are now powerful and efficient ODE solvers in R that make it
 easy to simulate from any PK model, including
-[mrgsolve](https://mrgsolve.github.io/),
+[mrgsolve](https://mrgsolve.org/),
 [PKPDsim](https://github.com/InsightRX/PKPDsim), and
 [RxODE](https://github.com/nlmixrdevelopment/RxODE). These packages are much
 more powerful than `linpk`, which can only solve *linear* systems of ODE. What
@@ -334,19 +334,19 @@ the infusion at the time when the parameters change.
 
 ## Shiny app
 
-The package includes a small shiny app for interactive exploration. To run it,
+The package includes a small shiny app for interactive exploration. To run it locally,
 the following packages must be installed:
 [shiny](https://CRAN.R-project.org/package=shiny),
 [shinyjs](https://CRAN.R-project.org/package=shinyjs),
 [shinyAce](https://CRAN.R-project.org/package=shinyAce),
-[dygraphs](https://CRAN.R-project.org/package=dygraphs). It can then be run by
-the command:
+[dygraphs](https://CRAN.R-project.org/package=dygraphs).
+It can then be run by the command:
 
 ```{r eval=F}
-linpkApp()
+linpk::linpkApp()
 ```
 
-The app will open in a browser. It looks like this:
+The app will open in a browser, and looks like this:
 
 ![Screenshot of the shiny app](./screenshot_shiny_1.png){width=100%}
 
