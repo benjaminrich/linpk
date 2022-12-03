@@ -1,6 +1,6 @@
 # linpk
 
-[![R-CMD-check](https://github.com/benjaminrich/linpk/workflows/R-CMD-check/badge.svg)](https://github.com/benjaminrich/linpk/actions){.linpk-devel}
+[![R-CMD-check](https://github.com/benjaminrich/linpk/workflows/R-CMD-check/badge.svg)](https://github.com/benjaminrich/linpk/actions)
 [![CRAN\_Release\_Badge](http://www.r-pkg.org/badges/version-ago/linpk)](https://CRAN.R-project.org/package=linpk)
 [![CRAN\_Download\_Badge](http://cranlogs.r-pkg.org/badges/linpk)](https://CRAN.R-project.org/package=linpk)
 
@@ -32,7 +32,7 @@ y <- pkprofile(t.obs, cl=0.5, vc=11, ka=1.3, dose=list(amt=100, addl=9, ii=12))
 plot(y)
 ```
 
-![PK profile from a one-compartment model with first-order absorption under repeated dosing](man/figures/README-basic-usage-example-1.png){width=100%}
+![PK profile from a one-compartment model with first-order absorption under repeated dosing](man/figures/README-basic-usage-example-1.png)
 
 For a more detailed introduction to the package, see the [vignette](https://benjaminrich.github.io/linpk/vignettes/linpk-intro.html).
 
@@ -51,6 +51,6 @@ linpk::linpkApp()
 
 The app will open in a browser, and looks like this:
 
-![Screenshot of the shiny app](https://github.com/benjaminrich/linpk/raw/master/vignettes/screenshot_shiny_1.png){width=100%}
+![Screenshot of the shiny app](https://github.com/benjaminrich/linpk/raw/master/vignettes/screenshot_shiny_1.png)
 
 
