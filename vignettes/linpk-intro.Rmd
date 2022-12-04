@@ -358,7 +358,7 @@ directly to a script.
 
 ## Limitations
 
-Compared to more general ODE solvers ([mrgsolve](https://mrgsolve.github.io/),
+Compared to more general ODE solvers ([mrgsolve](https://mrgsolve.org/),
 [PKPDsim](https://github.com/InsightRX/PKPDsim),
 [RxODE](https://github.com/nlmixrdevelopment/RxODE)), this package has some
 limitations, the most obvious being that it can only simulate from *linear* PK

@@ -1,5 +1,7 @@
 # Version 1.1.2
 
+Re-submitting after fixing link in vignette.
+
 ## Test environments
 
 * Local:
