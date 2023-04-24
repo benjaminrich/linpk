@@ -18,4 +18,5 @@ Construct a block-diagonal matrix.
 }
 \examples{
 blockdiag(matrix(1, 2, 2), 2, matrix(3, 4, 4))
+blockdiag(c(a=5, b=6), Diag(c=7, d=8), LTmat(c(1, 2, 3), .names=c("e", "f")))
 }

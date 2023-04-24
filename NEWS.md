@@ -1,3 +1,7 @@
+# linpk 1.1.3
+
+* Add function `Diag()` and improve `LTmat()` and `blockdiag()`.
+
 # linpk 1.1.2
 
 * Change default names for generateETA.

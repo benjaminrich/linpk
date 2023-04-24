@@ -834,20 +834,72 @@ points.pkprofile <- function(x, y, ...) {
     }
 }
 
+#' Diagonal Matrix
+#'
+#' Like the base \code{\link{diag}} function, except that vectors of length
+#' one are converted to 1-by-1 matrices, values can be specified either as a
+#' single vector argument or multiple arguments, and row and column names can
+#' be specified.
+
+#' @param x A numeric (or number-like) vector (possibly named).
+#' @param ... Additional numeric (or number-like) vectors (possibly named).
+#' @param .names,.colnames,.rownames Optionally, specify the row and column
+#' names of the resulting diagonal matrix.
+#' @examples
+#' Diag(6)
+#' Diag(3.14, .names="pi")
+#' Diag(1:6, .colnames=LETTERS[1:6], .rownames=letters[1:6])
+#' Diag(1, 2, 3)
+#' Diag(a=1, b=2, c=3)
+#' Diag(a=1, c(b=2, c=3))
+#' Diag(2+3i, 4+5i)
+#' Diag(T, F)
+#' @export
+Diag <- function(x, ..., .names=names(x), .colnames=.names, .rownames=.names) {
+    args <- unlist(list(...))
+    if (missing(x)) {
+        x <- args
+    } else {
+        x <- c(x, args)
+    }
+    if (!(is.complex(x) || is.numeric(x) || is.integer(x) || is.logical(x) || is.raw(x))) {
+        stop("Expecting arguments of type complex, numeric, integer, logical, or raw")
+    }
+    m <- diag(x, nrow=length(x)) 
+    colnames(m) <- .colnames; rownames(m) <- .rownames
+    m
+}
+
 #' Construct a symmetric matrix from its lower triangle.
-#' @param LT A numeric vector giving the elements of the lower triangle of the
-#' matrix by row (see examples).
-#' @param .names,.colnames,.rownames Optionally, specify row and column names of the resulting matrix.
+#' @param LT A numeric (or number-like) vector giving the elements of the
+#' lower triangle of the matrix by row (see examples).
+#' @param ... Additional numeric (or number-like) vectors, appended to
+#' \code{LT}.
+#' @param .names,.colnames,.rownames Optionally, specify the row and column
+#' names of the resulting diagonal matrix.
+#' @param .names,.colnames,.rownames Optionally, specify row and column names
+#' of the resulting matrix.
 #' @return A symmetric matrix.
 #' @examples
 #' LTmat(1:6)
+#' LTmat(1, 3, 5, .names=c("a", "b"))
+#' LTmat(1+2i, 3+4i, 5+6i)
 #' @export
-LTmat <- function(LT, .names=attr(LT, ".names"), .colnames=.names, .rownames=.names) {
+LTmat <- function(LT, ..., .names=attr(LT, ".names"), .colnames=.names, .rownames=.names) {
+    args <- unlist(list(...))
+    if (missing(LT)) {
+        LT <- args
+    } else {
+        LT <- c(LT, args)
+    }
+    if (!(is.complex(LT) || is.numeric(LT) || is.integer(LT) || is.logical(LT) || is.raw(LT))) {
+        stop("Expecting arguments of type complex, numeric, integer, logical, or raw")
+    }
     x <- length(LT)
     p <- (sqrt(8*x + 1) - 1)/2
-    m <- matrix(0, p, p)
+    m <- matrix(vector(typeof(LT), 0L), p, p)
     m[upper.tri(m, diag=T)] <- LT
-    m <- m + t(m) - diag(diag(m))
+    m[lower.tri(m, diag=F)] <- t(m)[lower.tri(m, diag=F)]
     colnames(m) <- .colnames; rownames(m) <- .rownames
     m
 }
@@ -875,12 +927,13 @@ cor2cov <- function(cor, sd) {
 #' @return A block-diagonal matrix.
 #' @examples
 #' blockdiag(matrix(1, 2, 2), 2, matrix(3, 4, 4))
+#' blockdiag(c(a=5, b=6), Diag(c=7, d=8), LTmat(c(1, 2, 3), .names=c("e", "f")))
 #' @export
 blockdiag <- function(...) {
     b <- list(...)
     b <- lapply(b, function(x) {
-        if (is.numeric(x) && length(x) == 1) {
-            x <- as.matrix(x)
+        if (is.vector(x) && !is.matrix(x)) {
+            x <- Diag(x)
         }
         if (!is.matrix(x) || nrow(x) != ncol(x)) {
             stop("All arguments must be square matrices")
