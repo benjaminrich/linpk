@@ -28,5 +28,4 @@ Diag(1, 2, 3)
 Diag(a=1, b=2, c=3)
 Diag(a=1, c(b=2, c=3))
 Diag(2+3i, 4+5i)
-Diag(T, F)
 }

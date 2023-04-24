@@ -853,7 +853,6 @@ points.pkprofile <- function(x, y, ...) {
 #' Diag(a=1, b=2, c=3)
 #' Diag(a=1, c(b=2, c=3))
 #' Diag(2+3i, 4+5i)
-#' Diag(T, F)
 #' @export
 Diag <- function(x, ..., .names=names(x), .colnames=.names, .rownames=.names) {
     args <- unlist(list(...))
