@@ -20,4 +20,5 @@ Convert from standard deviation and correlation matrix to covariance matrix.
 }
 \examples{
 cor2cov(matrix(c(1, 0.5, 0.5, 1), 2, 2), 0.1)
+cor2cov(LTmat(c(0.39, 0.67, 0.28), .names=c("CL", "VC")))
 }

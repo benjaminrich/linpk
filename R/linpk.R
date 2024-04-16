@@ -910,26 +910,49 @@ LTmat <- function(LT, ..., .names=attr(LT, ".names"), .colnames=.names, .rowname
 #' @return A covariance matrix.
 #' @examples
 #' cor2cov(matrix(c(1, 0.5, 0.5, 1), 2, 2), 0.1)
+#' cor2cov(LTmat(c(0.39, 0.67, 0.28), .names=c("CL", "VC")))
 #' @export
 cor2cov <- function(cor, sd) {
+    is.square.matrix <- function(x) {
+        d <- dim(x)
+        is.numeric(x) && length(d) == 2 && (d[1] == d[2])
+    }
+    if (!is.square.matrix(cor)) {
+        stop("'cor' is not a square numeric matrix")
+    }
+    n <- nrow(cor)
     if (missing(sd)) {
         sd <- diag(cor)
+    } else if (!(is.numeric(sd) && length(sd) %in% c(1, n))) {
+        stop("'sd' must be a numeric vector of length equal to the dimensions of 'cor' or 1")
     }
     diag(cor) <- 1
-    n <- nrow(cor)
-    diag(sd, n) %*% cor %*% diag(sd, n)
+    cov <- diag(sd, n) %*% cor %*% diag(sd, n)
+    dimnames(cov) <- dimnames(cor)
+    cov
 }
 
 #' Construct a block-diagonal matrix.
 #' @param ... Any number of square matrices making up the diagonal blocks of
 #' the matrix.
+#' @param .names,.colnames,.rownames Optionally, specify row and column names
+#' of the resulting matrix.
 #' @return A block-diagonal matrix.
 #' @examples
 #' blockdiag(matrix(1, 2, 2), 2, matrix(3, 4, 4))
 #' blockdiag(c(a=5, b=6), Diag(c=7, d=8), LTmat(c(1, 2, 3), .names=c("e", "f")))
+#' blockdiag(a=5, b=6, Diag(c=7, d=8), LTmat(c(1, 2, 3), .names=c("e", "f")))
+#' blockdiag(5, 6, Diag(7, 8), LTmat(c(1, 2, 3)), .names=c("a", "b", "c", "d", "e", "f"))
 #' @export
-blockdiag <- function(...) {
+blockdiag <- function(..., .names=NULL, .colnames=.names, .rownames=.names) {
     b <- list(...)
+    if (!is.null(names(b))) {
+        for (i in 1:length(b)) {
+            if (length(b[[i]]) == 1 && is.null(names(b[[i]]))) {
+                names(b[[i]]) <- names(b)[[i]]
+            }
+        }
+    }
     b <- lapply(b, function(x) {
         if (is.vector(x) && !is.matrix(x)) {
             x <- Diag(x)
@@ -947,10 +970,24 @@ blockdiag <- function(...) {
         i <- (1:n[j]) + cn[j]
         m[i,i] <- b[[j]]
     }
-    rnam <- unlist(lapply(b, function(x) dimnames(x)[[1]]))
-    cnam <- unlist(lapply(b, function(x) dimnames(x)[[2]]))
-    if (length(rnam) == nrow(m)) { rownames(m) <- rnam }
-    if (length(cnam) == ncol(m)) { colnames(m) <- cnam }
+    if (is.null(.rownames)) {
+        rnam <- unlist(lapply(b, function(x) dimnames(x)[[1]]))
+        if (length(rnam) == nrow(m)) { rownames(m) <- rnam }
+    } else {
+        if (!(is.character(.rownames) && length(.rownames) == nrow(m))) {
+            stop("'.rownames' must be a character vector of length of appropriate length")
+        }
+        rownames(m) <- .rownames
+    }
+    if (is.null(.colnames)) {
+        cnam <- unlist(lapply(b, function(x) dimnames(x)[[2]]))
+        if (length(cnam) == ncol(m)) { colnames(m) <- cnam }
+    } else {
+        if (!(is.character(.colnames) && length(.colnames) == ncol(m))) {
+            stop("'.colnames' must be a character vector of length of appropriate length")
+        }
+        colnames(m) <- .colnames
+    }
     m
 }
 

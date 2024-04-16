@@ -4,11 +4,14 @@
 \alias{blockdiag}
 \title{Construct a block-diagonal matrix.}
 \usage{
-blockdiag(...)
+blockdiag(..., .names = NULL, .colnames = .names, .rownames = .names)
 }
 \arguments{
 \item{...}{Any number of square matrices making up the diagonal blocks of
 the matrix.}
+
+\item{.names, .colnames, .rownames}{Optionally, specify row and column names
+of the resulting matrix.}
 }
 \value{
 A block-diagonal matrix.
@@ -19,4 +22,6 @@ Construct a block-diagonal matrix.
 \examples{
 blockdiag(matrix(1, 2, 2), 2, matrix(3, 4, 4))
 blockdiag(c(a=5, b=6), Diag(c=7, d=8), LTmat(c(1, 2, 3), .names=c("e", "f")))
+blockdiag(a=5, b=6, Diag(c=7, d=8), LTmat(c(1, 2, 3), .names=c("e", "f")))
+blockdiag(5, 6, Diag(7, 8), LTmat(c(1, 2, 3)), .names=c("a", "b", "c", "d", "e", "f"))
 }

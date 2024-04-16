@@ -1,3 +1,7 @@
+# linpk 1.1.4
+
+* Improve handling of dimnames in matrix functions.
+
 # linpk 1.1.3
 
 * Add function `Diag()` and improve `LTmat()` and `blockdiag()`.
