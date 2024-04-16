@@ -19,8 +19,9 @@ lower triangle of the matrix by row (see examples).}
 \item{...}{Additional numeric (or number-like) vectors, appended to
 \code{LT}.}
 
-\item{.names, .colnames, .rownames}{Optionally, specify row and column names
-of the resulting matrix.}
+\item{.names, .colnames, .rownames}{Optionally, specify the row and column
+names of the resulting diagonal matrix. The names can also be specified as
+the LHS of a 2-sided formula (see Examples).}
 }
 \value{
 A symmetric matrix.
@@ -31,5 +32,6 @@ Construct a symmetric matrix from its lower triangle.
 \examples{
 LTmat(1:6)
 LTmat(1, 3, 5, .names=c("a", "b"))
+LTmat(c(a, b) ~ c(1, 3, 5))  # Names can also be specified as LHS of a 2-sided formula
 LTmat(1+2i, 3+4i, 5+6i)
 }

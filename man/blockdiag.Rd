@@ -10,8 +10,8 @@ blockdiag(..., .names = NULL, .colnames = .names, .rownames = .names)
 \item{...}{Any number of square matrices making up the diagonal blocks of
 the matrix.}
 
-\item{.names, .colnames, .rownames}{Optionally, specify row and column names
-of the resulting matrix.}
+\item{.names, .colnames, .rownames}{Optionally, specify the row and column
+names of the resulting matrix.}
 }
 \value{
 A block-diagonal matrix.

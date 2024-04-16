@@ -875,19 +875,32 @@ Diag <- function(x, ..., .names=names(x), .colnames=.names, .rownames=.names) {
 #' @param ... Additional numeric (or number-like) vectors, appended to
 #' \code{LT}.
 #' @param .names,.colnames,.rownames Optionally, specify the row and column
-#' names of the resulting diagonal matrix.
-#' @param .names,.colnames,.rownames Optionally, specify row and column names
-#' of the resulting matrix.
+#' names of the resulting diagonal matrix. The names can also be specified as
+#' the LHS of a 2-sided formula (see Examples).
 #' @return A symmetric matrix.
 #' @examples
 #' LTmat(1:6)
 #' LTmat(1, 3, 5, .names=c("a", "b"))
+#' LTmat(c(a, b) ~ c(1, 3, 5))  # Names can also be specified as LHS of a 2-sided formula
 #' LTmat(1+2i, 3+4i, 5+6i)
 #' @export
 LTmat <- function(LT, ..., .names=attr(LT, ".names"), .colnames=.names, .rownames=.names) {
     args <- unlist(list(...))
+    is.formula <- function(x) is.call(x) && x[[1]] == quote(`~`)
     if (missing(LT)) {
         LT <- args
+    } else if (is.formula(LT)) {
+        if (!is.null(args)) {
+            warning("'...' is ignored when 'LT' is a formula")
+        }
+        if (length(LT) != 3) {
+            stop("Invalid formula")
+        }
+        if (!(is.call(LT[[2]]) && LT[[2]][[1]] == quote(`c`))) {
+            stop("Invalid formula")
+        }
+        .names <- sapply(LT[[2]][-1], deparse1)
+        LT <- eval(LT[[3]])
     } else {
         LT <- c(LT, args)
     }
@@ -899,6 +912,18 @@ LTmat <- function(LT, ..., .names=attr(LT, ".names"), .colnames=.names, .rowname
     m <- matrix(vector(typeof(LT), 0L), p, p)
     m[upper.tri(m, diag=T)] <- LT
     m[lower.tri(m, diag=F)] <- t(m)[lower.tri(m, diag=F)]
+    if ((!is.null(.names)) && (!is.character(.names))) {
+        stop("'.names' should be a character vector")
+    }
+    if ((!is.null(.names)) && (length(.names) != p)) {
+        stop("Length of .names does not match matrix dimensions")
+    }
+    if ((!is.null(.rownames)) && !(is.character(.rownames) && length(.rownames) == p)) {
+        stop("Invalid .rownames")
+    }
+    if ((!is.null(.colnames)) && !(is.character(.colnames) && length(.colnames) == p)) {
+        stop("Invalid .colnames")
+    }
     colnames(m) <- .colnames; rownames(m) <- .rownames
     m
 }
@@ -935,8 +960,8 @@ cor2cov <- function(cor, sd) {
 #' Construct a block-diagonal matrix.
 #' @param ... Any number of square matrices making up the diagonal blocks of
 #' the matrix.
-#' @param .names,.colnames,.rownames Optionally, specify row and column names
-#' of the resulting matrix.
+#' @param .names,.colnames,.rownames Optionally, specify the row and column
+#' names of the resulting matrix.
 #' @return A block-diagonal matrix.
 #' @examples
 #' blockdiag(matrix(1, 2, 2), 2, matrix(3, 4, 4))
